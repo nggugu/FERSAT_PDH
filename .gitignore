@@ -6,3 +6,4 @@
 *.su
 *.launch
 /Debug
+\Debug
