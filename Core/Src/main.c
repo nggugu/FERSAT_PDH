@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "spi.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -93,6 +94,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   RED_LED_ON();
   GREEN_LED_ON();
@@ -102,6 +104,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  RED_LED_OFF();
+	  GREEN_LED_ON();
+	  wait_for((uint32_t) 1000, TIM_UNIT_MS);
+	  RED_LED_ON();
+	  GREEN_LED_OFF();
+	  wait_for((uint32_t) 1000, TIM_UNIT_MS);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -144,8 +152,8 @@ void SystemClock_Config(void)
 
   }
   LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
-  LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_2);
-  LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
+  LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_4);
+  LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_2);
 
   LL_Init1msTick(80000000);
 

@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    gpio.h
+  * @file    tim.h
   * @brief   This file contains all the function prototypes for
-  *          the gpio.c file
+  *          the tim.c file
   ******************************************************************************
   * @attention
   *
@@ -18,8 +18,8 @@
   */
 /* USER CODE END Header */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __GPIO_H__
-#define __GPIO_H__
+#ifndef __TIM_H__
+#define __TIM_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,20 +33,19 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
-#define RED_LED_ON()		LL_GPIO_SetOutputPin(LED_R_GPIO_Port,LED_R_Pin)
-#define GREEN_LED_ON()		LL_GPIO_SetOutputPin(LED_G_GPIO_Port,LED_G_Pin)
-#define RED_LED_OFF()		LL_GPIO_ResetOutputPin(LED_R_GPIO_Port, LED_R_Pin)
-#define GREEN_LED_OFF()		LL_GPIO_ResetOutputPin(LED_G_GPIO_Port, LED_G_Pin)
+#define TIM_UNIT_US		0
+#define TIM_UNIT_MS		1
 /* USER CODE END Private defines */
 
-void MX_GPIO_Init(void);
+void MX_TIM2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void wait_for(uint32_t interval, uint8_t wait_unit);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ GPIO_H__ */
+
+#endif /* __TIM_H__ */
 
