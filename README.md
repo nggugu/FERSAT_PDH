@@ -1,4 +1,6 @@
 # FERSAT PDH
+## 6. commit
+Dodatno uređen kod. Izbrisan nepotreban generiran kod, dodana inicijalizacijska funkcija GPIO pinova za debug.
 ## 5. commit
 Napravljene posebne funkcije za inicijalizaciju GPIO pinova. Izbrisan dio izgeneriranog koda.
 ## 4. commit

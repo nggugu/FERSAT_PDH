@@ -1,5 +1,10 @@
 #include "gpio.h"
 
+void DEBUG_GPIO_Init(void) {
+	LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOH);
+	LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOB);
+}
+
 void LED_GPIO_Init(void) {
 	LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -12,10 +17,6 @@ void LED_GPIO_Init(void) {
 	GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
 	GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
 	LL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /* GPIO Ports Clock Enable */
-  LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOH);
-  LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOB);
 }
 
 void W25N_GPIO_Init(void) {

@@ -1,31 +1,7 @@
-/* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file    spi.c
-  * @brief   This file provides code for the configuration
-  *          of the SPI instances.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2022 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
-/* USER CODE END Header */
-/* Includes ------------------------------------------------------------------*/
 #include "spi.h"
 
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
 /* SPI1 init function */
-void MX_SPI1_Init(void)
+void W25N_SPI_Init(void)
 {
   LL_SPI_InitTypeDef SPI_InitStruct = {0};
 
@@ -44,4 +20,6 @@ void MX_SPI1_Init(void)
   LL_SPI_Init(SPI1, &SPI_InitStruct);
   LL_SPI_SetStandard(SPI1, LL_SPI_PROTOCOL_MOTOROLA);
   LL_SPI_DisableNSSPulseMgt(SPI1);
+
+  wait_for((uint32_t) 500, TIM_UNIT_MS);
 }
