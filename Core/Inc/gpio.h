@@ -39,7 +39,8 @@ extern "C" {
 #define GREEN_LED_OFF()		LL_GPIO_ResetOutputPin(LED_G_GPIO_Port, LED_G_Pin)
 /* USER CODE END Private defines */
 
-void MX_GPIO_Init(void);
+void LED_GPIO_Init(void);
+void W25N_GPIO_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 

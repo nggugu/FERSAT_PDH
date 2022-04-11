@@ -92,9 +92,10 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
+  LED_GPIO_Init();
+  W25N_GPIO_Init();
   MX_SPI1_Init();
-  MX_TIM2_Init();
+  timers_init();
   /* USER CODE BEGIN 2 */
   RED_LED_ON();
   GREEN_LED_ON();
