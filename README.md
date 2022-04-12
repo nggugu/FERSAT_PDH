@@ -1,4 +1,6 @@
 # FERSAT PDH
+## 7. commit
+Ponovno sam izgeneriral kod jer sam se zbunil. Bilješka za mene: Ispada da nije baš pametno u tijeku testiranja prčkati po izgeneriranom kodu, jer budeš DEFINITIVNO još trebal code generator.
 ## 6. commit
 Dodatno uređen kod. Izbrisan nepotreban generiran kod, dodana inicijalizacijska funkcija GPIO pinova za debug.
 ## 5. commit
