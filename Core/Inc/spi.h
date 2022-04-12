@@ -29,7 +29,7 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "tim.h"
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
@@ -39,7 +39,7 @@ extern "C" {
 void MX_SPI1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+uint32_t get_JEDEC_ID(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

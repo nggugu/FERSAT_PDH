@@ -1,4 +1,7 @@
 # FERSAT PDH
+## 8. commit
+Sad kad sam se prestal praviti pametan i nisam prčkal po izgeneriranom kodu uspio sam uspješno pročitati device ID od flash memorije.
+12. 04. 2022. bude zapamćen kao povjesni datum.
 ## 7. commit
 Ponovno sam izgeneriral kod jer sam se zbunil. Bilješka za mene: Ispada da nije baš pametno u tijeku testiranja prčkati po izgeneriranom kodu, jer budeš DEFINITIVNO još trebal code generator.
 ## 6. commit

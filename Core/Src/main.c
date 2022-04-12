@@ -44,7 +44,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint32_t id = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -89,26 +89,30 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
 
+  /*
+   * WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!
+   * If you rerun code generator put TIM2 initialization function BEFORE SPI1 initialization function.
+   */
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_SPI1_Init();
   MX_TIM2_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-
+  id = get_JEDEC_ID();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  LL_GPIO_SetOutputPin(LED_R_GPIO_Port, LED_R_Pin);
-	  LL_GPIO_ResetOutputPin(LED_G_GPIO_Port, LED_G_Pin);
-	  wait_for((uint32_t) 1000, TIM_UNIT_MS);
-	  LL_GPIO_ResetOutputPin(LED_R_GPIO_Port, LED_R_Pin);
-	  LL_GPIO_SetOutputPin(LED_G_GPIO_Port, LED_G_Pin);
-	  wait_for((uint32_t) 1000, TIM_UNIT_MS);
+	  if ( id==0x0021AAEF ){
+		  LL_GPIO_SetOutputPin(LED_G_GPIO_Port, LED_G_Pin);		//green LED
+	  } else{
+		  LL_GPIO_SetOutputPin(LED_R_GPIO_Port, LED_R_Pin);		//red LED
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
