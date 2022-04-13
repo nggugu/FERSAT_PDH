@@ -1,4 +1,7 @@
 # FERSAT PDH
+## 9. commit
+Strane sile su još jednom podbacile u svojem pokušaju da potkopaju Hrvatski Svemirski Program. Uspio sam ostvariti SPI komunikaciju sa kamerom.
+I2C još nisam uspio, ali kad je SPI radio onda bude valja i I2C.
 ## 8. commit
 Sad kad sam se prestal praviti pametan i nisam prčkal po izgeneriranom kodu uspio sam uspješno pročitati device ID od flash memorije.
 12. 04. 2022. bude zapamćen kao povjesni datum.

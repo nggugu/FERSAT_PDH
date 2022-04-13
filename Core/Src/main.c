@@ -18,13 +18,14 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "i2c.h"
 #include "spi.h"
 #include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "acam.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,6 +46,7 @@
 
 /* USER CODE BEGIN PV */
 uint32_t id = 0;
+uint8_t test = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -89,26 +91,25 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
 
-  /*
-   * WARNING! WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!
-   * If you rerun code generator put TIM2 initialization function BEFORE SPI1 initialization function.
-   */
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM2_Init();
   MX_SPI1_Init();
+  MX_SPI2_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   id = get_JEDEC_ID();
+  test = ACAM_test_comms();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if ( id==0x0021AAEF ){
+	  /* (id==0x0021AAEF) && */
+	  if (test==1){
 		  LL_GPIO_SetOutputPin(LED_G_GPIO_Port, LED_G_Pin);		//green LED
 	  } else{
 		  LL_GPIO_SetOutputPin(LED_R_GPIO_Port, LED_R_Pin);		//red LED
