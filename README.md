@@ -1,4 +1,6 @@
 # FERSAT PDH
+## 10. commit
+SVE KAJ NE RAZMEM I KAJ ME ZBUNJUJE SAM POBRISAL.
 ## 9. commit
 Strane sile su još jednom podbacile u svojem pokušaju da potkopaju Hrvatski Svemirski Program. Uspio sam ostvariti SPI komunikaciju sa kamerom.
 I2C još nisam uspio, ali kad je SPI radio onda bude valja i I2C.

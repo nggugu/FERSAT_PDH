@@ -75,28 +75,4 @@ uint8_t ACAM_test_comms(void);
 
 void ACAM_reset(void);
 
-void ACAM_select_JPEG(void);
-
-void ACAM_select_RAW(uint8_t resolution);
-
-void ACAM_start_capture(void);
-
-uint32_t ACAM_get_image_size();
-
-__STATIC_INLINE void ACAM_exp_gain_manual(void){
-	ACAM_i2c_write(0x3503, 0x07);
-}
-
-__STATIC_INLINE void ACAM_exp_gain_auto(void){
-	ACAM_i2c_write(0x3503, 0x00);
-}
-
-__STATIC_INLINE uint8_t ACAM_is_cap_complete(void){
-	return ( ACAM_spi_read(0x41) & 0x08 );
-}
-
-void ACAM_set_exposure(uint16_t nr_lines, uint8_t nr_lines_frac);
-
-void ACAM_set_gain(uint8_t gain);
-
 #endif //__ACAM_H_
