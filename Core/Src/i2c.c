@@ -47,7 +47,7 @@ void MX_I2C1_Init(void)
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_4;
   LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
@@ -80,5 +80,34 @@ void MX_I2C1_Init(void)
 }
 
 /* USER CODE BEGIN 1 */
+void I2C_Start(I2C_TypeDef *I2Cx) {
+	SET_BIT(I2Cx->CR2, I2C_CR2_START);
+}
 
+void I2C_Write(I2C_TypeDef *I2Cx, uint8_t data) {
+	while(READ_BIT(I2Cx->ISR, I2C_ISR_TXE) != 1);
+	LL_I2C_TransmitData8(I2Cx, data);
+	while(READ_BIT(I2Cx->ISR, I2C_ISR_TXE) != 1);
+}
+
+void I2C_Address_Write(I2C_TypeDef *I2Cx, uint8_t address) {
+	LL_I2C_SetTransferSize(I2Cx, (uint32_t)2);
+	CLEAR_BIT(I2Cx->CR2, I2C_CR2_RD_WRN);
+	LL_I2C_SetSlaveAddr(I2Cx, address);
+}
+
+void I2C_Address_Read(I2C_TypeDef *I2Cx, uint8_t address) {
+	LL_I2C_SetTransferSize(I2Cx, (uint32_t) 1);
+	SET_BIT(I2Cx->CR2, I2C_CR2_RD_WRN);
+	LL_I2C_SetSlaveAddr(I2Cx, address);
+}
+
+uint8_t I2C_Read(I2C_TypeDef *I2Cx) {
+	uint8_t retval = 0;
+
+	while(!((I2Cx->ISR) & I2C_ISR_RXNE));
+	retval = LL_I2C_ReceiveData8(I2Cx);
+
+	return retval;
+}
 /* USER CODE END 1 */

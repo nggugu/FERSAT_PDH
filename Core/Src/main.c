@@ -109,7 +109,7 @@ int main(void)
   while (1)
   {
 	  /* (id==0x0021AAEF) && */
-	  if (test==1){
+	  if ((test==1) && (id==0x0021AAEF)){
 		  LL_GPIO_SetOutputPin(LED_G_GPIO_Port, LED_G_Pin);		//green LED
 	  } else{
 		  LL_GPIO_SetOutputPin(LED_R_GPIO_Port, LED_R_Pin);		//red LED

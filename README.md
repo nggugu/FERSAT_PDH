@@ -1,4 +1,12 @@
 # FERSAT PDH
+## 11. commit
+Napokon sam shvatil kak I2C funkcionira ovdje, uspio sam pročitati chip ID sa kamere.
+
+Postoji samo jedna nejasnoća:
+Kada sam provjeraval TXE bit u registru ISR, `while(READ_BIT(I2Cx->ISR, I2C_ISR_TXE) != 1)` je funkcioniralo sasvim dobro,
+no kada sam na taj isti način išao provjeravati RXNE bit u registru ISR, `while(READ_BIT(I2Cx->ISR, I2C_ISR_RXNE) != 1)`, program je
+zapeo u while petlji, a RXNE je je bio u jedinici. Kod provjere RXNE-a sam koristil način koji sam naučio na URS-u,
+`while(!((I2Cx->ISR) & I2C_ISR_RXNE))`, i onda je sve bilo dobro. There are fell voices on the air.
 ## 10. commit
 SVE KAJ NE RAZMEM I KAJ ME ZBUNJUJE SAM POBRISAL.
 ## 9. commit

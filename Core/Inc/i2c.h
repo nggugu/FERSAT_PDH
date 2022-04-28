@@ -39,7 +39,11 @@ extern "C" {
 void MX_I2C1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+void I2C_Start(I2C_TypeDef *I2Cx);
+void I2C_Write(I2C_TypeDef *I2Cx, uint8_t data);
+void I2C_Address_Write(I2C_TypeDef *I2Cx, uint8_t address);
+void I2C_Address_Read(I2C_TypeDef *I2Cx, uint8_t address);
+uint8_t I2C_Read(I2C_TypeDef *I2Cx);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
