@@ -21,7 +21,7 @@
 #include "i2c.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "acam.h"
 /* USER CODE END 0 */
 
 /* I2C1 init function */
@@ -54,6 +54,10 @@ void MX_I2C1_Init(void)
   /* Peripheral clock enable */
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_I2C1);
 
+  /* I2C1 interrupt Init */
+  NVIC_SetPriority(I2C1_EV_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),3, 0));
+  NVIC_EnableIRQ(I2C1_EV_IRQn);
+
   /* USER CODE BEGIN I2C1_Init 1 */
 
   /* USER CODE END I2C1_Init 1 */
@@ -74,40 +78,11 @@ void MX_I2C1_Init(void)
   LL_I2C_Init(I2C1, &I2C_InitStruct);
   LL_I2C_SetOwnAddress2(I2C1, 0, LL_I2C_OWNADDRESS2_NOMASK);
   /* USER CODE BEGIN I2C1_Init 2 */
-
+  LL_I2C_DisableAutoEndMode(I2C1);
   /* USER CODE END I2C1_Init 2 */
 
 }
 
 /* USER CODE BEGIN 1 */
-void I2C_Start(I2C_TypeDef *I2Cx) {
-	SET_BIT(I2Cx->CR2, I2C_CR2_START);
-}
 
-void I2C_Write(I2C_TypeDef *I2Cx, uint8_t data) {
-	while(READ_BIT(I2Cx->ISR, I2C_ISR_TXE) != 1);
-	LL_I2C_TransmitData8(I2Cx, data);
-	while(READ_BIT(I2Cx->ISR, I2C_ISR_TXE) != 1);
-}
-
-void I2C_Address_Write(I2C_TypeDef *I2Cx, uint8_t address) {
-	LL_I2C_SetTransferSize(I2Cx, (uint32_t)2);
-	CLEAR_BIT(I2Cx->CR2, I2C_CR2_RD_WRN);
-	LL_I2C_SetSlaveAddr(I2Cx, address);
-}
-
-void I2C_Address_Read(I2C_TypeDef *I2Cx, uint8_t address) {
-	LL_I2C_SetTransferSize(I2Cx, (uint32_t) 1);
-	SET_BIT(I2Cx->CR2, I2C_CR2_RD_WRN);
-	LL_I2C_SetSlaveAddr(I2Cx, address);
-}
-
-uint8_t I2C_Read(I2C_TypeDef *I2Cx) {
-	uint8_t retval = 0;
-
-	while(!((I2Cx->ISR) & I2C_ISR_RXNE));
-	retval = LL_I2C_ReceiveData8(I2Cx);
-
-	return retval;
-}
 /* USER CODE END 1 */

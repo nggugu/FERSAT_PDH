@@ -2,16 +2,16 @@
 
 //uint8_t buffer[IMG_BUFF_SIZE];
 
-volatile struct i2c_transaction i2c_trans;
-struct acam_i2c_reg *acam_i2c;
+volatile struct I2C_Transaction I2C_Trans;
+struct ACAM_I2C_Register *acam_I2C;
 
-void ACAM_reset(void){
-	ACAM_spi_write(0x06,0x05);		//reset sensor via SPI
+void ACAM_Reset(void){
+	ACAM_SPI_Write(0x06,0x05);		//reset sensor via SPI
 	wait_for(100,TIM_UNIT_MS);
 
-	ACAM_spi_write(0x07,0x80);		//reset CPLD
+	ACAM_SPI_Write(0x07,0x80);		//reset CPLD
 	wait_for(100,TIM_UNIT_MS);
-	ACAM_spi_write(0x07,0x00);
+	ACAM_SPI_Write(0x07,0x00);
 	wait_for(100,TIM_UNIT_MS);
 
 	return;
@@ -19,14 +19,14 @@ void ACAM_reset(void){
 
 //test I2C and SPI interface
 //if ok returns 1, else 0
-uint8_t ACAM_test_comms(void){
-	if( ACAM_i2c_read(0x300a)!=0x56 ) return 0;
-	if( ACAM_spi_read(0x40)!=0x73 ) return 0;
+uint8_t ACAM_TestComms(void){
+	if( ACAM_I2C_Read(0x300a)!=0x56 ) return 0;
+	if( ACAM_SPI_Read(0x40)!=0x73 ) return 0;
 
 	return 1;
 }
 
-uint8_t ACAM_spi_read(uint8_t reg){
+uint8_t ACAM_SPI_Read(uint8_t reg){
 	uint8_t retval;
 
 	//ACAM_CS_LOW();
@@ -53,7 +53,7 @@ uint8_t ACAM_spi_read(uint8_t reg){
 	return retval;
 }
 
-void ACAM_spi_write(uint8_t reg, uint8_t val){
+void ACAM_SPI_Write(uint8_t reg, uint8_t val){
 	ACAM_CS_LOW();
 	wait_for(1,TIM_UNIT_US);
 
@@ -76,38 +76,84 @@ void ACAM_spi_write(uint8_t reg, uint8_t val){
 	return;
 }
 
-uint8_t ACAM_i2c_read(uint16_t reg){
-	// splitting register value into low and high parts
-	uint8_t reg_hi = (uint8_t)( (reg >> 8) & 0x00FF );
-	uint8_t reg_lo = (uint8_t)( reg & 0x00FF );
+/*
+ * @brief Setup parameters for I2C communication (SADD, RD_WRN, NBYTES)
+ */
+void ACAM_I2C_Setup() {
+	LL_I2C_SetTransferSize(I2C1, I2C_Trans.bytesLeft);	// Set bytes to be written/received
 
-	// return value
-	uint8_t retval = 0;
+	// Check transfer type and set CR2 bit accordingly
+	if ((I2C_Trans.type == ACAM_I2C_WRITE) || (I2C_Trans.type == ACAM_I2C_WRITE_REG)) {
+		CLEAR_BIT(I2C1->CR2, I2C_CR2_RD_WRN);
+	} else if (I2C_Trans.type == ACAM_I2C_READ) {
+		SET_BIT(I2C1->CR2, I2C_CR2_RD_WRN);
+	}
 
-	//I2C_Start(I2C1);
-	I2C_Address_Write(I2C1, ACAM_I2C_ADDR);
-	I2C_Start(I2C1);
-	I2C_Write(I2C1, reg_hi);
-	I2C_Write(I2C1, reg_lo);
-	I2C_Address_Read(I2C1, ACAM_I2C_ADDR);
-	I2C_Start(I2C1);
-	retval = I2C_Read(I2C1);
-
-	return retval;
+	// Set slave address
+	LL_I2C_SetSlaveAddr(I2C1, ACAM_I2C_ADDR);
 }
 
-void ACAM_i2c_write(uint16_t reg, uint8_t command){
-	struct acam_i2c_reg current_reg;
+uint8_t ACAM_I2C_Read(uint16_t reg){
+	struct ACAM_I2C_Register currentReg;
 
-	acam_i2c = &current_reg;
+	acam_I2C = &currentReg;
 
-	acam_i2c->reg_hi = (uint8_t)((reg >> 8) & 0x00FF);
-	acam_i2c->reg_lo = (uint8_t)( reg & 0x00FF);
-	acam_i2c->cmd = command;
+	// Splitting register value into low and high parts
+	acam_I2C->HIGH = (uint8_t)( (reg >> 8) & 0x00FF );
+	acam_I2C->LOW = (uint8_t)( reg & 0x00FF );
 
-	i2c_trans.type = ACAM_I2C_WRITE_REG;
-	i2c_trans.bytes_left = 3;
-	i2c_trans.status = I2C_ONGOING;
+	// Send addresses of registers we want to read from and the type of communication we want
+	I2C_Trans.type = ACAM_I2C_WRITE;
+	I2C_Trans.bytesLeft = 2;
+	I2C_Trans.status = I2C_ONGOING;
+
+	ACAM_I2C_Setup(I2C1, ACAM_I2C_ADDR);
+
+	// Wait for ongoing communication to stop
+	while(LL_I2C_IsActiveFlag_BUSY(I2C1));
+
+	// Enable Transfer Complete and Transfer Register Empty interrupts
+	LL_I2C_EnableIT_TC(I2C1);
+	LL_I2C_EnableIT_TX(I2C1);
+
+	LL_I2C_GenerateStartCondition(I2C1);	// Start the communication
+
+	// Wait for communication to stop
+	while(I2C_Trans.status == I2C_ONGOING);
+	while(LL_I2C_IsActiveFlag_BUSY(I2C1));
+
+	// Send addresses of registers we want to read from and the type of communication we want
+	I2C_Trans.type = ACAM_I2C_READ;
+	I2C_Trans.bytesLeft = 1;
+	I2C_Trans.status = I2C_ONGOING;
+
+	ACAM_I2C_Setup(I2C1, ACAM_I2C_ADDR);
+
+	// Enable Transfer Complete and Receive Register Not Empty interrupts
+	LL_I2C_EnableIT_TC(I2C1);
+	LL_I2C_EnableIT_RX(I2C1);
+
+	LL_I2C_GenerateStartCondition(I2C1);	// Start the communication
+
+	// Wait for communication to stop
+	while(I2C_Trans.status == I2C_ONGOING);
+	while(LL_I2C_IsActiveFlag_BUSY(I2C1));
+
+	return I2C_Trans.retval;	// Return read value
+}
+
+void ACAM_I2C_Write(uint16_t reg, uint8_t command){
+	struct ACAM_I2C_Register current_reg;
+
+	acam_I2C = &current_reg;
+
+	acam_I2C->HIGH = (uint8_t)((reg >> 8) & 0x00FF);
+	acam_I2C->LOW = (uint8_t)( reg & 0x00FF);
+	acam_I2C->CMD = command;
+
+	I2C_Trans.type = ACAM_I2C_WRITE_REG;
+	I2C_Trans.bytesLeft = 3;
+	I2C_Trans.status = I2C_ONGOING;
 
 	while( LL_I2C_IsActiveFlag_BUSY(I2C1) );
 
@@ -122,7 +168,7 @@ void ACAM_i2c_write(uint16_t reg, uint8_t command){
 	//LL_I2C_EnableIT_BUF(I2C1);
 
 	LL_I2C_GenerateStartCondition(I2C1);
-	while( i2c_trans.status == I2C_ONGOING );
+	while( I2C_Trans.status == I2C_ONGOING );
 	LL_I2C_GenerateStopCondition(I2C1);
 
 	wait_for(10,TIM_UNIT_US);

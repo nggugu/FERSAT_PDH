@@ -199,6 +199,71 @@ void SysTick_Handler(void)
 /* please refer to the startup file (startup_stm32l4xx.s).                    */
 /******************************************************************************/
 
+/**
+  * @brief This function handles I2C1 event interrupt.
+  */
+void I2C1_EV_IRQHandler(void)
+{
+  /* USER CODE BEGIN I2C1_EV_IRQn 0 */
+	uint32_t I2C_StatusRegister = I2C1->ISR;	// Status register
+
+	// Transfer Register Empty
+	if (READ_BIT(I2C_StatusRegister, I2C_ISR_TXIS) == I2C_ISR_TXIS) {
+		// Send data according to number of bytes left to be transfered
+		switch (I2C_Trans.bytesLeft) {
+			case 3:
+				/*
+				 * bytesLeft = 3 >>>> Transmit 8 MSBs of target register
+				 */
+				LL_I2C_TransmitData8(I2C1, acam_I2C->HIGH);
+				I2C_Trans.bytesLeft = 2;
+				break;
+			case 2:
+				/*
+				 * bytesLeft = 2 >>>> Transmit 8 MSBs of target register or transmit 8 LSBs of target register,
+				 * according to the type of transfer
+				 */
+				LL_I2C_TransmitData8(I2C1, (I2C_Trans.type == ACAM_I2C_WRITE_REG) ? acam_I2C->LOW : acam_I2C->HIGH);
+				I2C_Trans.bytesLeft = 1;
+				break;
+			case 1:
+				/*
+				 * bytesLeft = 1 >>>> Transmit 8 LSBs of target register or transmit data to be written,
+				 * according to the type of transfer
+				 */
+				LL_I2C_TransmitData8(I2C1, (I2C_Trans.type == ACAM_I2C_WRITE_REG) ? acam_I2C->CMD : acam_I2C->LOW);
+				I2C_Trans.bytesLeft = 0;
+				break;
+			case 0:
+				/*
+				 * bytesLeft = 0 >>>> Disable Transfer Register Empty interrupt
+				 */
+				LL_I2C_DisableIT_TX(I2C1);
+				break;
+			default:
+				break;
+		}
+	}
+
+	// Receive Register Not Empty
+	if (READ_BIT(I2C_StatusRegister, I2C_ISR_RXNE) == I2C_ISR_RXNE) {
+		I2C_Trans.retval = LL_I2C_ReceiveData8(I2C1);	// Read data from Receive Register
+		I2C_Trans.type = I2C_COMPLETE;					// Change the status of communication
+	}
+
+	// Transfer complete
+	if (READ_BIT(I2C_StatusRegister, I2C_ISR_TC) == I2C_ISR_TC) {
+		I2C_Trans.status = I2C_COMPLETE;	// Change the status of communication
+		LL_I2C_DisableIT_TC(I2C1);			// Disable Transfer Complete interrupt
+		LL_I2C_GenerateStopCondition(I2C1);	// Stop the communication
+	}
+  /* USER CODE END I2C1_EV_IRQn 0 */
+
+  /* USER CODE BEGIN I2C1_EV_IRQn 1 */
+
+  /* USER CODE END I2C1_EV_IRQn 1 */
+}
+
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */

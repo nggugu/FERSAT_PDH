@@ -101,7 +101,7 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   id = get_JEDEC_ID();
-  test = ACAM_test_comms();
+  test = ACAM_TestComms();
   /* USER CODE END 2 */
 
   /* Infinite loop */

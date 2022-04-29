@@ -1,4 +1,6 @@
 # FERSAT PDH
+## 12. commit
+Napisao samo prekidnu podrutinu za I2C po uzoru na prethodnika i iskomentirao dio koda kojega smatram konačnim.
 ## 11. commit
 Napokon sam shvatil kak I2C funkcionira ovdje, uspio sam pročitati chip ID sa kamere.
 
