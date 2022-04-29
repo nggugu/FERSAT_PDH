@@ -74,11 +74,14 @@ void ACAM_SPI_Write(uint8_t reg, uint8_t val);
  */
 void ACAM_I2C_Setup();
 
+/*
+ * @brief Read from data register
+ */
 uint8_t ACAM_I2C_Read(uint16_t reg);
 
 void ACAM_I2C_Write(uint16_t reg, uint8_t command);
 
-void ACAM_I2C_WriteSeq(const struct ACAM_I2C_Register command_seq[]);
+void ACAM_I2C_WriteSeq(const struct ACAM_I2C_Register commandSeq[]);
 
 
 //Arducam general functions

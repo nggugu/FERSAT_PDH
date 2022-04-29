@@ -1,4 +1,10 @@
 # FERSAT PDH
+## 13. commit
+Uf, broj 13. Sva sreća pa nisam praznovjerna osoba *Kaže to dok kuca u stol i pokušava ne ubiti pauka koji mu daje noćne more*.
+
+Uglavnom, mislim da je I2C komunikacija za kameru napravljena. Moguće je da nije, s obzirom na to da se bude potpuni test napravil tek
+kada napravim sve ostalo, ali ne vidim razloga za probleme. Sad krećem s radom na flash memoriji, pa nakon toga budem radil na kameri i tek
+nakon toga budem implementiral RTOS. Kad sve to obavim, organiziral budem kod da to bude kak Bog zapovijeda.
 ## 12. commit
 Napisao samo prekidnu podrutinu za I2C po uzoru na prethodnika i iskomentirao dio koda kojega smatram konačnim.
 ## 11. commit

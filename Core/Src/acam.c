@@ -93,6 +93,9 @@ void ACAM_I2C_Setup() {
 	LL_I2C_SetSlaveAddr(I2C1, ACAM_I2C_ADDR);
 }
 
+/*
+ * @brief Read from data register
+ */
 uint8_t ACAM_I2C_Read(uint16_t reg){
 	struct ACAM_I2C_Register currentReg;
 
@@ -107,7 +110,7 @@ uint8_t ACAM_I2C_Read(uint16_t reg){
 	I2C_Trans.bytesLeft = 2;
 	I2C_Trans.status = I2C_ONGOING;
 
-	ACAM_I2C_Setup(I2C1, ACAM_I2C_ADDR);
+	ACAM_I2C_Setup();
 
 	// Wait for ongoing communication to stop
 	while(LL_I2C_IsActiveFlag_BUSY(I2C1));
@@ -127,7 +130,7 @@ uint8_t ACAM_I2C_Read(uint16_t reg){
 	I2C_Trans.bytesLeft = 1;
 	I2C_Trans.status = I2C_ONGOING;
 
-	ACAM_I2C_Setup(I2C1, ACAM_I2C_ADDR);
+	ACAM_I2C_Setup();
 
 	// Enable Transfer Complete and Receive Register Not Empty interrupts
 	LL_I2C_EnableIT_TC(I2C1);
@@ -155,22 +158,45 @@ void ACAM_I2C_Write(uint16_t reg, uint8_t command){
 	I2C_Trans.bytesLeft = 3;
 	I2C_Trans.status = I2C_ONGOING;
 
+	ACAM_I2C_Setup();
+
 	while( LL_I2C_IsActiveFlag_BUSY(I2C1) );
 
-	LL_I2C_EnableIT_ADDR(I2C1);
-	LL_I2C_EnableIT_NACK(I2C1);
-	LL_I2C_EnableIT_RX(I2C1);
-	LL_I2C_EnableIT_STOP(I2C1);
 	LL_I2C_EnableIT_TC(I2C1);
 	LL_I2C_EnableIT_TX(I2C1);
 
-	//LL_I2C_EnableIT_EVT(I2C1);
-	//LL_I2C_EnableIT_BUF(I2C1);
-
 	LL_I2C_GenerateStartCondition(I2C1);
 	while( I2C_Trans.status == I2C_ONGOING );
-	LL_I2C_GenerateStopCondition(I2C1);
 
 	wait_for(10,TIM_UNIT_US);
+	return;
+}
+
+void ACAM_I2C_WriteSeq(const struct ACAM_I2C_Register commandSeq[]) {
+	uint16_t currentReg=0;
+
+	I2C_Trans.type = ACAM_I2C_WRITE_REG;
+
+	acam_I2C = (struct ACAM_I2C_Register *)(&commandSeq[currentReg]);
+
+	while(commandSeq[currentReg].HIGH!=0xFF){
+		I2C_Trans.bytesLeft = 3;
+		I2C_Trans.status = I2C_ONGOING;
+
+		ACAM_I2C_Setup();
+
+		while(LL_I2C_IsActiveFlag_BUSY(I2C1));
+
+		LL_I2C_EnableIT_TC(I2C1);
+		LL_I2C_EnableIT_TX(I2C1);
+
+		LL_I2C_GenerateStartCondition(I2C1);
+		while(I2C_Trans.status == I2C_ONGOING);
+
+		currentReg++;
+		acam_I2C++;
+		wait_for(10,TIM_UNIT_US);
+	};
+
 	return;
 }
