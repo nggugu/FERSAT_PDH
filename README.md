@@ -1,4 +1,15 @@
 # FERSAT PDH
+## 14. commit
+Kratki update.
+
+Shvatil sam zakaj kod I2C komunikacije kada sam provjeraval RXNE zastavicu nije funkcioniralo
+`while(READ_BIT(I2Cx->ISR, I2C_ISR_RXNE) != 1)`. Dakle, funkcija `READ_BIT` radi tak da napravi logički I
+ISR registra i pozicije zastavice koja nas zanima, dakle `((REG) & (BIT))`, i onda zapravo dobijemo 32-bitni broj koji
+ima jedinicu ili nulu na mjestu zastavice koja nas zanima i ima 0 na ostalim mjestima, a ja genijalac sam mislil da jednostavno
+dobijem samo nulu ili jedinicu kao povratnu informaciju. Zastavica TXE je na najnižem mjestu u ISR registru i zato, kada je ta zastavica
+bila podignuta, mogel sam registar uspoređivati sa jedinicom, jer sam u tom slučaju kao povratnu informaciju dobil upravo jedinicu.
+Da bi na isti način mogel ispitivati i RXNE zastavicu, moral sam pročitanu vrijednost uspoređivati sa brojem 4, jer se ta zastavica nalazi
+na drugom bitu u ISR registru.
 ## 13. commit
 Uf, broj 13. Sva sreća pa nisam praznovjerna osoba *Kaže to dok kuca u stol i pokušava ne ubiti pauka koji mu daje noćne more*.
 
