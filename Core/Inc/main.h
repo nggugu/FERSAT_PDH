@@ -28,6 +28,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 
+#include "stm32l4xx_ll_dma.h"
 #include "stm32l4xx_ll_i2c.h"
 #include "stm32l4xx_ll_crs.h"
 #include "stm32l4xx_ll_rcc.h"
@@ -37,9 +38,9 @@ extern "C" {
 #include "stm32l4xx_ll_cortex.h"
 #include "stm32l4xx_ll_utils.h"
 #include "stm32l4xx_ll_pwr.h"
-#include "stm32l4xx_ll_dma.h"
 #include "stm32l4xx_ll_spi.h"
 #include "stm32l4xx_ll_tim.h"
+#include "stm32l4xx_ll_usart.h"
 #include "stm32l4xx_ll_gpio.h"
 
 #if defined(USE_FULL_ASSERT)
@@ -48,7 +49,18 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "main.h"
+#include "cmsis_os.h"
+#include "acam.h"
+#include "i2c.h"
+#include "spi.h"
+#include "tim.h"
+#include "usart.h"
+#include "gpio.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "w25n.h"
+#include "usart.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

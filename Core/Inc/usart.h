@@ -1,9 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    tim.h
+  * @file    usart.h
   * @brief   This file contains all the function prototypes for
-  *          the tim.c file
+  *          the usart.c file
   ******************************************************************************
   * @attention
   *
@@ -18,8 +18,8 @@
   */
 /* USER CODE END Header */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __TIM_H__
-#define __TIM_H__
+#ifndef __USART_H__
+#define __USART_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,34 +33,34 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
-#define TIM_UNIT_US		0
-#define TIM_UNIT_MS		1
+#define UART_RXBUF_SIZE 32
+
+struct uart_buffer{
+	uint8_t buffer[UART_RXBUF_SIZE];
+	uint16_t head;
+	uint16_t tail;
+};
+
+extern struct uart_buffer uart_rx;
 /* USER CODE END Private defines */
 
-void MX_TIM2_Init(void);
+void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-void wait_for(uint32_t interval, uint8_t wait_unit);
+void uart_init(void);
+void uart_send_char(uint8_t c);
+void uart_send_data(uint8_t * data, uint32_t nr_bytes);
+uint32_t uart_rec_char(uint8_t *c);
+void printf_eig(const char * text);
+uint8_t* gets_eig(uint8_t *s);
 
-//approx 50 ns
-__STATIC_INLINE void wait_for_50_ns(void) __attribute__((always_inline));
-__STATIC_INLINE void wait_for_50_ns(void){
-	//frequency before prescaler is 84 MHz
-	// 0 8
-	WRITE_REG(TIM2->PSC, 0);
-	WRITE_REG(TIM2->ARR, 4);
-	SET_BIT(TIM2->EGR, TIM_EGR_UG); //update event generation
-	SET_BIT(TIM2->CR1, TIM_CR1_CEN); //counter enable
-	while( !READ_BIT(TIM2->SR, TIM_SR_UIF) ); //wait for update flag
-	WRITE_REG(TIM2->SR, ~(TIM_SR_UIF));	//clear update flag
-
-	return;
-}
+uint16_t parse_file_name(uint8_t * s);
+uint16_t parse_uint16(uint8_t * s);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __TIM_H__ */
+#endif /* __USART_H__ */
 

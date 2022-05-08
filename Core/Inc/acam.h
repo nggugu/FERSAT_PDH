@@ -2,10 +2,6 @@
 #define __ACAM_H_
 
 #include "main.h"
-#include "tim.h"
-#include "gpio.h"
-#include "spi.h"
-#include "i2c.h"
 
 //#define IMG_BUFF_SIZE 	2048
 
@@ -63,6 +59,8 @@ uint8_t ACAM_SPI_Read(uint8_t reg);
 
 void ACAM_SPI_Write(uint8_t reg, uint8_t val);
 
+void ACAM_spi_read_package(uint8_t * buff, uint16_t size);
+
 /*
  * =====================
  * Arducam I2C functions
@@ -86,6 +84,16 @@ void ACAM_I2C_WriteSeq(const struct ACAM_I2C_Register commandSeq[]);
 
 //Arducam general functions
 uint8_t ACAM_TestComms(void);
+
+void ACAM_select_JPEG(void);
+
+void ACAM_select_RAW(uint8_t resolution);
+
+void ACAM_start_capture(void);
+
+uint32_t ACAM_get_image_size();
+
+void ACAM_set_exposure(uint16_t nr_lines, uint8_t nr_lines_frac);
 
 void ACAM_Reset(void);
 
