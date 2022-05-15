@@ -1,4 +1,6 @@
 # FERSAT PDH
+## 16. commit
+Prepisao i modificirao kod za DMA prijenos. Kod za kameru je sada do kraja prepisan. Krećem na prepisivanje taskova za FreeRTOS.
 ## 15. commit
 Prepisao sam kod za flash memoriju, inicijalizirao sam FreeRTOS i DMA, trenutačno prepisujem kod za kameru. Nisam ništa pokušao testirati do sada.
 Za sada ću prepisivati kod i nadati se najboljem i kada prepišem sve što mi treba sređivat ću kod da radi na ovom mikrokontroleru.

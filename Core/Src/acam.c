@@ -182,10 +182,10 @@ uint8_t ACAM_SPI_Read(uint8_t reg){
 	while( !LL_SPI_IsActiveFlag_TXE(SPI2) );	//wait for TX empty - not necessary, but per protocol
 	while( LL_SPI_IsActiveFlag_BSY(SPI2) );
 
-	wait_for(500,TIM_UNIT_MS);
+	wait_for(1,TIM_UNIT_US);
 	//ACAM_CS_HIGH();
 	LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);
-	wait_for(500,TIM_UNIT_MS);
+	wait_for(10,TIM_UNIT_US);
 
 	return retval;
 }
@@ -212,7 +212,7 @@ void ACAM_SPI_Write(uint8_t reg, uint8_t val){
 
 	return;
 }
-/*
+
 void ACAM_spi_read_package(uint8_t * buff, uint16_t size){
 	uint8_t command[2] = { 0x3C, 0x00 };
 	uint8_t dummy;
@@ -250,7 +250,7 @@ void ACAM_spi_read_package(uint8_t * buff, uint16_t size){
 	return;
 
 }
-*/
+
 /*
  * @brief Setup parameters for I2C communication (SADD, RD_WRN, NBYTES)
  */

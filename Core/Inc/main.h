@@ -61,6 +61,7 @@ extern "C" {
 #include "task.h"
 #include "w25n.h"
 #include "usart.h"
+#include "dma.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
