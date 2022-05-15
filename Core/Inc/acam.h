@@ -97,4 +97,18 @@ void ACAM_set_exposure(uint16_t nr_lines, uint8_t nr_lines_frac);
 
 void ACAM_Reset(void);
 
+__STATIC_INLINE void ACAM_exp_gain_manual(void){
+	ACAM_I2C_Write(0x3503, 0x07);
+}
+
+__STATIC_INLINE void ACAM_exp_gain_auto(void){
+	ACAM_I2C_Write(0x3503, 0x00);
+}
+
+__STATIC_INLINE uint8_t ACAM_is_cap_complete(void){
+	return ( ACAM_SPI_Read(0x41) & 0x08 );
+}
+
+void ACAM_set_gain(uint8_t gain);
+
 #endif //__ACAM_H_

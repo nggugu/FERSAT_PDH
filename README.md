@@ -1,4 +1,6 @@
 # FERSAT PDH
+## 17. commit
+Prepisao i modificirao taskove za FreeRTOS.
 ## 16. commit
 Prepisao i modificirao kod za DMA prijenos. Kod za kameru je sada do kraja prepisan. Krećem na prepisivanje taskova za FreeRTOS.
 ## 15. commit

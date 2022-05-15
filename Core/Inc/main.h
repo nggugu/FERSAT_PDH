@@ -62,6 +62,7 @@ extern "C" {
 #include "w25n.h"
 #include "usart.h"
 #include "dma.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -104,7 +105,39 @@ void Error_Handler(void);
                                                                  0 bit  for subpriority */
 #endif
 /* USER CODE BEGIN Private defines */
+#define PDH_IMG_FMT_JPG		0
+#define PDH_IMG_FMT_RAW		1
 
+#define PDH_DEVICE_OK		0
+#define PDH_DEVICE_ERR		1
+
+#define XBAND_BUF_SIZE	2040
+#define SBC_BUF_SIZE	2040
+
+typedef enum{
+	dev_xband,
+	dev_camera,
+	dev_sensor_board
+} pdh_device;
+
+struct camera_params{
+	uint16_t exp_nr_lines;
+	uint16_t exp_nr_lines_frac;
+	uint8_t gain;
+	uint8_t format;
+	uint16_t file_name;
+} __PACKED;
+
+struct pdh_params{
+	struct camera_params camera;
+} __PACKED;
+
+struct pdh_device_status{
+	pdh_device device;
+	uint8_t status;
+	uint32_t errno;
+	uint16_t target_file_name;
+} __PACKED;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

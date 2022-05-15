@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "filesys_api.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,6 +50,11 @@
 /* USER CODE BEGIN PV */
 uint32_t id = 0;
 uint8_t test = 0;
+
+uint8_t sbc_buf[SBC_BUF_SIZE]; //sensor_board/camera buffer
+
+QueueHandle_t camera_queue, device_status_queue;
+TaskHandle_t InterpTask_handle;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -61,7 +66,226 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void vTaskCamera(void *pvParameters){
+	uint16_t file, current_pack_size;
+	uint32_t img_size;
+	struct camera_params camera;
+	struct pdh_device_status pdh_device;
+	pdh_device.device = dev_camera;
 
+	while(1){
+		pdh_device.status = PDH_DEVICE_OK;
+		pdh_device.errno = 0xFFFFFFFF;
+		pdh_device.target_file_name = 0xFFFF;
+
+		xQueueReceive(camera_queue, &camera, portMAX_DELAY);
+
+		file = open(camera.file_name, O_CREAT|O_WRONLY|O_JWEAK);
+		if(file==0xFFFF){
+			pdh_device.status = PDH_DEVICE_ERR;
+			pdh_device.target_file_name = camera.file_name;
+			pdh_device.errno = errno;
+		} else {
+			ACAM_Reset();
+
+			if( camera.format==PDH_IMG_FMT_JPG){
+				ACAM_select_JPEG();
+			} else {
+				ACAM_select_RAW(1); //resolution 5 mp
+			}
+
+			ACAM_exp_gain_manual();
+			ACAM_set_exposure(camera.exp_nr_lines,camera.exp_nr_lines_frac);
+			ACAM_set_gain(camera.gain);
+
+			ACAM_start_capture();
+			while( !ACAM_is_cap_complete() );
+			wait_for(500,TIM_UNIT_MS);
+
+	    	img_size = ACAM_get_image_size();
+
+	    	while( img_size > 0 ){
+	    		if( img_size > SBC_BUF_SIZE ){
+				  current_pack_size = SBC_BUF_SIZE;
+				  img_size -= SBC_BUF_SIZE;
+	    		} else {
+				  current_pack_size = img_size;
+				  img_size = 0;
+	    		}
+
+	    		ACAM_spi_read_package(sbc_buf, current_pack_size);
+
+	    		if( write(file, sbc_buf, current_pack_size )==0xFFFFFFFF ){
+	    			pdh_device.status = PDH_DEVICE_ERR;
+	    			pdh_device.target_file_name = camera.file_name;
+	    			pdh_device.errno = errno;
+	    		}
+	    	}
+	    	pdh_device.target_file_name = camera.file_name;
+		}
+		xQueueSendToBack(device_status_queue, &pdh_device, 0);
+	}
+}
+
+void vTaskInterpreter(void *pvParameters){
+	struct pdh_params pdh;
+	struct pdh_device_status pdh_dev_status;
+	uint8_t s[8], collect_params = 0;
+	uint8_t nr_sent, nr_rec;
+	uint16_t u16_param;
+
+	//default params
+	pdh.camera.exp_nr_lines = 512;
+	pdh.camera.exp_nr_lines_frac = 0;
+	pdh.camera.gain = 1;
+	pdh.camera.format = PDH_IMG_FMT_JPG;
+
+	if(W25N_init()==0){
+		printf_eig("w25n SPI fault\r");
+		while(1);
+	} else {
+		printf_eig("startup_ok\r");
+	}
+
+	if( start_fs()==FS_FAIL ){
+		printf_eig("filesystem init failure.\n");
+	}
+
+
+	while(1){
+		//-----CAMERA-BEGIN-----
+		do {
+			printf_eig("Press 'y' to set camera params, 'd' to use default/previous, 'n' to skip\n");
+			if( gets_eig(s)!= NULL){
+				if( !strcmp((char *)s,"y") ){
+					collect_params = 1;
+					break;
+				} else if( !strcmp((char *)s,"d") ){
+					collect_params = 2;
+					break;
+				} else if( !strcmp((char *)s,"n") ){
+					collect_params = 0;
+					break;
+				} else {
+					printf_eig("Invalid command!\n");
+				}
+			}
+		} while(1);
+
+		if( collect_params==1 ){
+			//collect new parameters
+			collect_params = 0;
+
+			do {
+				printf_eig("Set exposure nr_lines (uint16_t).\n");
+				if( gets_eig(s)!= NULL){
+					pdh.camera.exp_nr_lines = parse_uint16(s);
+					break;
+				}
+			} while(1);
+
+			do {
+				printf_eig("Set exposure nr_lines frac (uint8_t).\n");
+				if( gets_eig(s)!= NULL){
+					pdh.camera.exp_nr_lines_frac = (uint8_t)parse_uint16(s);
+					break;
+				}
+			} while(1);
+
+			do {
+				printf_eig("Set gain (uint8_t), see acam.h.\n");
+				if( gets_eig(s)!= NULL){
+					pdh.camera.gain = (uint8_t)parse_uint16(s);
+					break;
+				}
+			} while(1);
+
+			do {
+				printf_eig("Select format: 'r' for raw, 'j' for jpeg,\n");
+				if( gets_eig(s)!= NULL){
+					if( !strcmp((char *)s,"r") ){
+						pdh.camera.format = PDH_IMG_FMT_RAW;
+						break;
+					} else if( !strcmp((char *)s,"j") ){
+						pdh.camera.format = PDH_IMG_FMT_JPG;
+						break;
+					} else {
+						printf_eig("Invalid command!\n");
+					}
+				}
+			} while(1);
+
+			do {
+				printf_eig("Enter file name [0-1023] to store image measurments.\n");
+				if( gets_eig(s)!= NULL){
+					u16_param = parse_file_name(s);
+					if( u16_param==0xFFFF ){
+						printf_eig("File name must be a number between 0 and 1023 (included)\n");
+					} else {
+						pdh.camera.file_name = u16_param;
+						break;
+					}
+				}
+			} while(1);
+			xQueueSendToBack(camera_queue, &pdh.camera, 0);
+			nr_sent++;
+
+		} else if(collect_params==2){
+			//use defaults/previous value, only gather file name
+			collect_params = 0;
+			do {
+				printf_eig("Enter file name [0-1023] to store image.\n");
+				if( gets_eig(s)!= NULL){
+					u16_param = parse_file_name(s);
+					if( u16_param==0xFFFF ){
+						printf_eig("File name must be a number between 0 and 1023 (included)\n");
+					} else {
+						pdh.camera.file_name = u16_param;
+						break;
+					}
+				}
+			} while(1);
+			xQueueSendToBack(camera_queue, &pdh.camera, 0);
+			nr_sent++;
+		}
+		//-----CAMERA-END-----
+
+		do {
+			printf_eig("Press 's' to start PDH operations\n");
+			if( gets_eig(s)!= NULL){
+				if( !strcmp((char *)s,"s") ){
+					//pdh.xband.reinit_filesys = 1;
+					break;
+				} else {
+					printf_eig("Invalid command!\n");
+				}
+			}
+		} while(1);
+
+		vTaskPrioritySet(NULL, 1); //drop interpreter task priority to enable execution of PDH device tasks
+
+		do{
+			xQueueReceive(device_status_queue, &pdh_dev_status, portMAX_DELAY);
+			if(pdh_dev_status.device==dev_xband){
+				printf_eig("Device xband status ");
+			} else if (pdh_dev_status.device==dev_camera){
+				printf_eig("Device camera status ");
+			} else {
+				printf_eig("Device sensor board status ");
+			}
+
+			if( pdh_dev_status.status==PDH_DEVICE_OK ){
+				printf_eig("ok\n");
+			} else {
+				printf_eig("err\n");
+			}
+
+			nr_rec++;
+		} while(nr_rec!=nr_sent);
+
+		vTaskPrioritySet(NULL, 5); //raise priority
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -110,6 +334,15 @@ int main(void)
   /* USER CODE BEGIN 2 */
   id = get_JEDEC_ID();
   test = ACAM_TestComms();
+
+  camera_queue = xQueueCreate(1, sizeof(struct camera_params) );
+  device_status_queue = xQueueCreate(3, sizeof(struct pdh_device_status) );
+
+  xTaskCreate( vTaskInterpreter, "Interpreter Task", configMINIMAL_STACK_SIZE*2, NULL, 5, &InterpTask_handle);
+  xTaskCreate( vTaskCamera, "Camera Task", configMINIMAL_STACK_SIZE*2, NULL, 2, NULL);
+
+  vTaskStartScheduler();
+
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
