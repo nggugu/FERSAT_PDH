@@ -47,75 +47,109 @@ void W25N_instruction_execute( W25N_instruction_nr instr, uint8_t *params, uint8
 	W25N_CS_LOW();
 	//wait_for_50_ns();
 
-	W25N_SPIn->DR = W25N_instruction[instr][0];	//instruction transmit
+	LL_SPI_TransmitData8(W25N_SPIn, W25N_instruction[instr][0]);
+	//W25N_SPIn->DR = W25N_instruction[instr][0];	//instruction transmit
 
 
 	if( DUMMY_PRESENT(W25N_instruction[instr][1]) ){			//dummy after instruction
-		while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
-		W25N_SPIn->DR = 0x00;
-		while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
-		dummy = W25N_SPIn->DR;
+		//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
+		while( !LL_SPI_IsActiveFlag_TXE(W25N_SPIn) );
+		LL_SPI_TransmitData8(W25N_SPIn, 0x00);
+		//W25N_SPIn->DR = 0x00;
+		while( !LL_SPI_IsActiveFlag_RXNE(W25N_SPIn) );
+		//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
+		dummy = LL_SPI_ReceiveData8(W25N_SPIn);
+		//dummy = W25N_SPIn->DR;
 	}
 
 	while ( nr_param_bytes-- ){										//parameters
-			while(!READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
-			W25N_SPIn->DR = *params++;
-			while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
-			dummy = W25N_SPIn->DR;
+		while( !LL_SPI_IsActiveFlag_TXE(W25N_SPIn) );
+		//while(!READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
+		LL_SPI_TransmitData8(W25N_SPIn, *params++);
+		//W25N_SPIn->DR = *params++;
+		while( !LL_SPI_IsActiveFlag_RXNE(W25N_SPIn) );
+		//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
+		dummy = LL_SPI_ReceiveData8(W25N_SPIn);
+		//dummy = W25N_SPIn->DR;
 	}
 
 	if ( DATA_OUT_TF(W25N_instruction[instr][1]) ){					//data out
 		while ( nr_data_bytes-- ){
-			while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
-			W25N_SPIn->DR = *data_or_rbs++;
-			while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
-			dummy = W25N_SPIn->DR;
+			while( !LL_SPI_IsActiveFlag_TXE(W25N_SPIn) );
+			//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
+			LL_SPI_TransmitData8(W25N_SPIn, *data_or_rbs);
+			//W25N_SPIn->DR = *data_or_rbs++;
+			while( !LL_SPI_IsActiveFlag_RXNE(W25N_SPIn) );
+			//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
+			dummy = LL_SPI_ReceiveData8(W25N_SPIn);
+			//dummy = W25N_SPIn->DR;
 
 		}
 	}
 
 	if( return_bytes_tf ){											//return bytes
-		while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
-		W25N_SPIn->DR = 0x00;
-		while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
-		dummy = W25N_SPIn->DR;
+		while( !LL_SPI_IsActiveFlag_TXE(W25N_SPIn) );
+		//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
+		LL_SPI_TransmitData8(W25N_SPIn, 0x00);
+		//W25N_SPIn->DR = 0x00;
+		while( !LL_SPI_IsActiveFlag_RXNE(W25N_SPIn) );
+		//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
+		dummy = LL_SPI_ReceiveData8(W25N_SPIn);
+		//dummy = W25N_SPIn->DR;
 		nr_return_bytes--;
 
 		while ( nr_return_bytes-- ){
-			while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
-			W25N_SPIn->DR = 0x00;
-			while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
-			*data_or_rbs++ = W25N_SPIn->DR;
+			while( !LL_SPI_IsActiveFlag_TXE(W25N_SPIn) );
+			//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
+			LL_SPI_TransmitData8(W25N_SPIn, 0x00);
+			//W25N_SPIn->DR = 0x00;
+			while( !LL_SPI_IsActiveFlag_RXNE(W25N_SPIn) );
+			//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
+			*data_or_rbs++ = LL_SPI_ReceiveData8(W25N_SPIn);
+			//*data_or_rbs++ = W25N_SPIn->DR;
 
 		}
 	}
 
 	if ( data_in_tf ){ 			//data in
 		for( i=0; i<2; i++){
-			while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
-			W25N_SPIn->DR = 0x00;
-			while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
-			dummy = W25N_SPIn->DR;
+			while( !LL_SPI_IsActiveFlag_TXE(W25N_SPIn) );
+			//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
+			LL_SPI_TransmitData8(W25N_SPIn, 0x00);
+			//W25N_SPIn->DR = 0x00;
+			while( !LL_SPI_IsActiveFlag_RXNE(W25N_SPIn) );
+			//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
+			dummy = LL_SPI_ReceiveData8(W25N_SPIn);
+			//dummy = W25N_SPIn->DR;
 		}
 		nr_data_bytes--;
 
 		while ( nr_data_bytes-- ){
-			while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
-			W25N_SPIn->DR = 0x00;
-			while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
-			*data_or_rbs++ = W25N_SPIn->DR;
+			while( !LL_SPI_IsActiveFlag_TXE(W25N_SPIn) );
+			//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
+			LL_SPI_TransmitData8(W25N_SPIn, 0x00);
+			//W25N_SPIn->DR = 0x00;
+			while( !LL_SPI_IsActiveFlag_RXNE(W25N_SPIn) );
+			//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );
+			*data_or_rbs++ = LL_SPI_ReceiveData8(W25N_SPIn);
+			//*data_or_rbs++ = W25N_SPIn->DR;
 		}
 	}
 
-	while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );					//final byte receive
+	while( !LL_SPI_IsActiveFlag_RXNE(W25N_SPIn) );
+	//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_RXNE) );					//final byte receive
 	if ( return_bytes_tf || data_in_tf ){
-		*data_or_rbs = W25N_SPIn->DR;
+		*data_or_rbs = LL_SPI_ReceiveData8(W25N_SPIn);
+		//*data_or_rbs = W25N_SPIn->DR;
 	} else {
-		dummy = W25N_SPIn->DR;
+		dummy = LL_SPI_ReceiveData8(W25N_SPIn);
+		//dummy = W25N_SPIn->DR;
 	}
 
-	while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
-	while( READ_BIT(W25N_SPIn->SR, SPI_SR_BSY) );
+	while( !LL_SPI_IsActiveFlag_TXE(W25N_SPIn) );
+	//while( !READ_BIT(W25N_SPIn->SR, SPI_SR_TXE) );
+	while( LL_SPI_IsActiveFlag_BSY(W25N_SPIn) );
+	//while( READ_BIT(W25N_SPIn->SR, SPI_SR_BSY) );
 	CLEAR_BIT(W25N_SPIn->CR1, SPI_CR1_SPE);				//disable SPI, deselect CS (NSS)
 	//wait_for_50_ns();
 	W25N_CS_HIGH();

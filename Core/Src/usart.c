@@ -74,6 +74,8 @@ void MX_USART2_UART_Init(void)
   LL_USART_Enable(USART2);
   /* USER CODE BEGIN USART2_Init 2 */
 
+  LL_USART_EnableIT_RXNE(USART2);
+
   /* USER CODE END USART2_Init 2 */
 
 }

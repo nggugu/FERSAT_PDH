@@ -188,7 +188,10 @@ void SysTick_Handler(void)
 void DMA1_Channel4_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel4_IRQn 0 */
-
+	if ( LL_DMA_IsActiveFlag_TC4(DMA1) ){
+		DMA_trans_complete_rx = 1;
+		LL_DMA_ClearFlag_TC4(DMA1);
+	}
   /* USER CODE END DMA1_Channel4_IRQn 0 */
 
   /* USER CODE BEGIN DMA1_Channel4_IRQn 1 */
@@ -202,7 +205,10 @@ void DMA1_Channel4_IRQHandler(void)
 void DMA1_Channel5_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel5_IRQn 0 */
-
+	if ( LL_DMA_IsActiveFlag_TC5(DMA1) ){
+		DMA_trans_complete_tx = 1;
+		LL_DMA_ClearFlag_TC5(DMA1);
+	}
   /* USER CODE END DMA1_Channel5_IRQn 0 */
 
   /* USER CODE BEGIN DMA1_Channel5_IRQn 1 */

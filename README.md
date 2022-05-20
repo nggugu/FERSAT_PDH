@@ -1,4 +1,6 @@
 # FERSAT PDH
+## 18. commit
+FreeRTOS funkcionira, sada treba otkloniti poteškoće kod DMA prijenosa.
 ## 17. commit
 Prepisao i modificirao taskove za FreeRTOS.
 ## 16. commit

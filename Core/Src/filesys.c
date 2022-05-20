@@ -171,7 +171,9 @@ uint8_t check_filesys_first_inited(void){
 	uint32_t key_read;
 
 	W25N_enter_OTP_mode();
-	while( !W25N_check_OTP_mode() );
+	while( !W25N_check_OTP_mode() ) {
+		W25N_enter_OTP_mode();
+	}
 
 	//OTP page [0], address 02h should hold key that indicates whether the filesystem has been initialized
 	while( W25N_page_data_read(0x0002) == W25N_ERR_BUSY );

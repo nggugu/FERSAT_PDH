@@ -144,18 +144,18 @@ void vTaskInterpreter(void *pvParameters){
 		printf_eig("w25n SPI fault\r");
 		while(1);
 	} else {
-		printf_eig("startup_ok\r");
+		printf_eig("startup_ok\r\n");
 	}
 
 	if( start_fs()==FS_FAIL ){
-		printf_eig("filesystem init failure.\n");
+		printf_eig("filesystem init failure.\r\n");
 	}
 
 
 	while(1){
 		//-----CAMERA-BEGIN-----
 		do {
-			printf_eig("Press 'y' to set camera params, 'd' to use default/previous, 'n' to skip\n");
+			printf_eig("Press 'y' to set camera params, 'd' to use default/previous, 'n' to skip\r\n");
 			if( gets_eig(s)!= NULL){
 				if( !strcmp((char *)s,"y") ){
 					collect_params = 1;
@@ -167,7 +167,7 @@ void vTaskInterpreter(void *pvParameters){
 					collect_params = 0;
 					break;
 				} else {
-					printf_eig("Invalid command!\n");
+					printf_eig("Invalid command!\r\n");
 				}
 			}
 		} while(1);
@@ -177,7 +177,7 @@ void vTaskInterpreter(void *pvParameters){
 			collect_params = 0;
 
 			do {
-				printf_eig("Set exposure nr_lines (uint16_t).\n");
+				printf_eig("Set exposure nr_lines (uint16_t).\r\n");
 				if( gets_eig(s)!= NULL){
 					pdh.camera.exp_nr_lines = parse_uint16(s);
 					break;
@@ -185,7 +185,7 @@ void vTaskInterpreter(void *pvParameters){
 			} while(1);
 
 			do {
-				printf_eig("Set exposure nr_lines frac (uint8_t).\n");
+				printf_eig("Set exposure nr_lines frac (uint8_t).\r\n");
 				if( gets_eig(s)!= NULL){
 					pdh.camera.exp_nr_lines_frac = (uint8_t)parse_uint16(s);
 					break;
@@ -193,7 +193,7 @@ void vTaskInterpreter(void *pvParameters){
 			} while(1);
 
 			do {
-				printf_eig("Set gain (uint8_t), see acam.h.\n");
+				printf_eig("Set gain (uint8_t), see acam.h.\r\n");
 				if( gets_eig(s)!= NULL){
 					pdh.camera.gain = (uint8_t)parse_uint16(s);
 					break;
@@ -201,7 +201,7 @@ void vTaskInterpreter(void *pvParameters){
 			} while(1);
 
 			do {
-				printf_eig("Select format: 'r' for raw, 'j' for jpeg,\n");
+				printf_eig("Select format: 'r' for raw, 'j' for jpeg,\r\n");
 				if( gets_eig(s)!= NULL){
 					if( !strcmp((char *)s,"r") ){
 						pdh.camera.format = PDH_IMG_FMT_RAW;
@@ -210,17 +210,17 @@ void vTaskInterpreter(void *pvParameters){
 						pdh.camera.format = PDH_IMG_FMT_JPG;
 						break;
 					} else {
-						printf_eig("Invalid command!\n");
+						printf_eig("Invalid command!\r\n");
 					}
 				}
 			} while(1);
 
 			do {
-				printf_eig("Enter file name [0-1023] to store image measurments.\n");
+				printf_eig("Enter file name [0-1023] to store image measurments.\r\n");
 				if( gets_eig(s)!= NULL){
 					u16_param = parse_file_name(s);
 					if( u16_param==0xFFFF ){
-						printf_eig("File name must be a number between 0 and 1023 (included)\n");
+						printf_eig("File name must be a number between 0 and 1023 (included)\r\n");
 					} else {
 						pdh.camera.file_name = u16_param;
 						break;
@@ -234,11 +234,11 @@ void vTaskInterpreter(void *pvParameters){
 			//use defaults/previous value, only gather file name
 			collect_params = 0;
 			do {
-				printf_eig("Enter file name [0-1023] to store image.\n");
+				printf_eig("Enter file name [0-1023] to store image.\r\n");
 				if( gets_eig(s)!= NULL){
 					u16_param = parse_file_name(s);
 					if( u16_param==0xFFFF ){
-						printf_eig("File name must be a number between 0 and 1023 (included)\n");
+						printf_eig("File name must be a number between 0 and 1023 (included)\r\n");
 					} else {
 						pdh.camera.file_name = u16_param;
 						break;
@@ -251,13 +251,13 @@ void vTaskInterpreter(void *pvParameters){
 		//-----CAMERA-END-----
 
 		do {
-			printf_eig("Press 's' to start PDH operations\n");
+			printf_eig("Press 's' to start PDH operations\r\n");
 			if( gets_eig(s)!= NULL){
 				if( !strcmp((char *)s,"s") ){
 					//pdh.xband.reinit_filesys = 1;
 					break;
 				} else {
-					printf_eig("Invalid command!\n");
+					printf_eig("Invalid command!\r\n");
 				}
 			}
 		} while(1);
@@ -266,6 +266,10 @@ void vTaskInterpreter(void *pvParameters){
 
 		do{
 			xQueueReceive(device_status_queue, &pdh_dev_status, portMAX_DELAY);
+			if (pdh_dev_status.device==dev_camera){
+				printf_eig("Device camera status ");
+			}
+			/*
 			if(pdh_dev_status.device==dev_xband){
 				printf_eig("Device xband status ");
 			} else if (pdh_dev_status.device==dev_camera){
@@ -273,6 +277,7 @@ void vTaskInterpreter(void *pvParameters){
 			} else {
 				printf_eig("Device sensor board status ");
 			}
+			*/
 
 			if( pdh_dev_status.status==PDH_DEVICE_OK ){
 				printf_eig("ok\n");
@@ -332,6 +337,12 @@ int main(void)
   MX_I2C1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  ACAM_DMA_Enable();
+  ACAM_DMA_FirstConfig_rx();
+  ACAM_DMA_FirstConfig_tx();
+  ACAM_CS_HIGH();
+  wait_for(10,TIM_UNIT_US);
+  LL_SPI_Enable(SPI2);
   id = get_JEDEC_ID();
   test = ACAM_TestComms();
 
