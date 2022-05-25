@@ -1,4 +1,12 @@
 # FERSAT PDH
+## 20. commit
+DMA napokon radi. Greška je bila tokom konfiguracije DMA periferije. Za konfiguraciju su se koristile
+funkcije `MX_DMA_Init()` i `MX_SPI2_Init()`. Kod početka programa glavni program je prvo pozvao funkciju
+`MX_SPI2_Init()`, koja je konfigurirala SPI i DMA, a onda je pozvao funkciju `MX_DMA_Init()`, koja je
+dodjeljivala prioritete prekidima i omogućavala takt za DMA. I upravo u tome je bio problem, što se je
+prvo konfigurirao DMA, a tek onda se je omogućio takt za DMA, čime zapravo ništa nije bilo napravljeno i
+DMA zapravo nije bio konfiguriran. Promjenom redosljeda zvanja fukncija problem je rješen. Sada ću pokušati
+spremiti sliku na računalo.
 ## 19. commit
 Isti problemi, samo malo drugačije napisan kod.
 ## 18. commit

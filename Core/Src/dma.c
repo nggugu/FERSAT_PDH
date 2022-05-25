@@ -136,6 +136,7 @@ void ACAM_DMA_config_tx(uint16_t nr_bytes, uint8_t * tx_address){
 	LL_DMA_SetDataLength( ACAM_DMAn, ACAM_LL_DMA_CHANNEL_TX, (uint32_t)nr_bytes);
 	LL_DMA_SetMemoryAddress( ACAM_DMAn, ACAM_LL_DMA_CHANNEL_TX, (uint32_t)tx_address);
 	LL_DMA_SetPeriphAddress( ACAM_DMAn, ACAM_LL_DMA_CHANNEL_TX, (uint32_t)(&(SPI2->DR)));
+	LL_DMA_EnableIT_TC(ACAM_DMAn, ACAM_LL_DMA_CHANNEL_TX);
 
 }
 
@@ -143,7 +144,7 @@ void ACAM_DMA_config_rx(uint16_t nr_bytes, uint8_t * rx_address){
 	LL_DMA_SetDataLength( ACAM_DMAn, ACAM_LL_DMA_CHANNEL_RX, (uint32_t)nr_bytes);
 	LL_DMA_SetMemoryAddress( ACAM_DMAn, ACAM_LL_DMA_CHANNEL_RX, (uint32_t)rx_address);
 	LL_DMA_SetPeriphAddress( ACAM_DMAn, ACAM_LL_DMA_CHANNEL_RX, (uint32_t)(&(SPI2->DR)));
-
+	LL_DMA_EnableIT_TC(ACAM_DMAn, ACAM_LL_DMA_CHANNEL_RX);
 }
 
 /* USER CODE END 2 */
