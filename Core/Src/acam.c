@@ -218,7 +218,8 @@ void ACAM_spi_read_package(uint8_t * buff, uint16_t size){
 	uint8_t dummy;
 	uint8_t i;
 
-	ACAM_CS_LOW();
+	LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_12);
+	//ACAM_CS_LOW();
 	wait_for(1,TIM_UNIT_US);
 
 	for( i=0; i<2; i++){
@@ -244,7 +245,8 @@ void ACAM_spi_read_package(uint8_t * buff, uint16_t size){
 	}
 
 	wait_for(1,TIM_UNIT_US);
-	ACAM_CS_HIGH();
+	//ACAM_CS_HIGH();
+	LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);
 	wait_for(10,TIM_UNIT_US);
 
 	return;

@@ -338,13 +338,7 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   ACAM_DMA_Enable();
-  ACAM_DMA_FirstConfig_rx();
-  ACAM_DMA_FirstConfig_tx();
-  ACAM_CS_HIGH();
-  wait_for(10,TIM_UNIT_US);
-  LL_SPI_Enable(SPI2);
-  id = get_JEDEC_ID();
-  test = ACAM_TestComms();
+  ACAM_TestComms();
 
   camera_queue = xQueueCreate(1, sizeof(struct camera_params) );
   device_status_queue = xQueueCreate(3, sizeof(struct pdh_device_status) );
@@ -357,22 +351,16 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
-  MX_FREERTOS_Init();
+  //MX_FREERTOS_Init();
 
   /* Start scheduler */
-  osKernelStart();
+  //osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  /* (id==0x0021AAEF) && */
-	  if ((test==1) && (id==0x0021AAEF)){
-		  LL_GPIO_SetOutputPin(LED_G_GPIO_Port, LED_G_Pin);		//green LED
-	  } else{
-		  LL_GPIO_SetOutputPin(LED_R_GPIO_Port, LED_R_Pin);		//red LED
-	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
