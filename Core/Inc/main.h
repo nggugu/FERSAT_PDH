@@ -63,6 +63,7 @@ extern "C" {
 #include "usart.h"
 #include "dma.h"
 #include "string.h"
+#include "xband.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -105,6 +106,11 @@ void Error_Handler(void);
                                                                  0 bit  for subpriority */
 #endif
 /* USER CODE BEGIN Private defines */
+#define XBAND_TRANSMITTER	0
+#define UART_TRANSMITTER	1
+
+#define XBAND_SELECT		UART_TRANSMITTER
+
 #define PDH_IMG_FMT_JPG		0
 #define PDH_IMG_FMT_RAW		1
 
@@ -128,7 +134,15 @@ struct camera_params{
 	uint16_t file_name;
 } __PACKED;
 
+struct xband_params{
+	uint8_t reinit_filesys;
+	uint16_t filename_to_transmit;
+	uint8_t delete_transmited_yn;
+	uint16_t filename_to_delete;
+} __PACKED;
+
 struct pdh_params{
+	struct xband_params xband;
 	struct camera_params camera;
 } __PACKED;
 

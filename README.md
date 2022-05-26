@@ -1,4 +1,9 @@
 # FERSAT PDH
+## 21. commit
+FreeRTOS sada radi kako treba. Za sada samo postoji greška kod X-Banda (čitaj: slanja slike preko UART-a).
+Pokušavam sada to otkloniti. Inače, FreeRTOS nije uopće mogao ući u task za X-Band, a razlog je bio premala
+količina heapa.
+
 ## 20. commit
 DMA napokon radi. Greška je bila tokom konfiguracije DMA periferije. Za konfiguraciju su se koristile
 funkcije `MX_DMA_Init()` i `MX_SPI2_Init()`. Kod početka programa glavni program je prvo pozvao funkciju

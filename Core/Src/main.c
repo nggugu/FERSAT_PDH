@@ -48,12 +48,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t id = 0;
-uint8_t test = 0;
-
+uint8_t xband_buf[XBAND_BUF_SIZE];
 uint8_t sbc_buf[SBC_BUF_SIZE]; //sensor_board/camera buffer
 
-QueueHandle_t camera_queue, device_status_queue;
+QueueHandle_t xband_queue, camera_queue, device_status_queue;
 TaskHandle_t InterpTask_handle;
 /* USER CODE END PV */
 
@@ -66,6 +64,91 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void vTaskXBand(void *pvParameters){
+	uint16_t file, current_pack_size;
+	uint32_t file_size;
+	struct xband_params xband;
+	struct pdh_device_status pdh_device;
+	pdh_device.device = dev_xband;
+
+	while(1){
+		pdh_device.status = PDH_DEVICE_OK;
+		pdh_device.errno = 0xFFFFFFFF;
+		pdh_device.target_file_name = 0xFFFF;
+
+		xQueueReceive(xband_queue, &xband, portMAX_DELAY);
+
+		if( xband.reinit_filesys ){
+			if( reinit_fs()==FS_FAIL ){
+				pdh_device.status = PDH_DEVICE_ERR;
+				pdh_device.target_file_name = 0xFFFF;
+				pdh_device.errno = errno;
+			}
+		} else {
+			if(xband.filename_to_transmit!=0xFFFF){
+				file = open(xband.filename_to_transmit, O_RDONLY);
+				if( file==0xFFFF ){
+					pdh_device.status = PDH_DEVICE_ERR;
+					pdh_device.target_file_name = xband.filename_to_transmit;
+					pdh_device.errno = errno;
+					xband.delete_transmited_yn = 0;
+					xband.filename_to_delete = 0xFFFF;
+					file_size = 0;
+				} else {
+					file_size = get_file_size(file);
+				}
+
+				if( file_size==0xFFFFFFFF ){
+					pdh_device.status = PDH_DEVICE_ERR;
+					pdh_device.target_file_name = xband.filename_to_transmit;
+					pdh_device.errno = errno;
+					xband.delete_transmited_yn = 0;
+					xband.filename_to_delete = 0xFFFF;
+					file_size = 0;
+				}
+
+				while( file_size>0 ){
+					if( file_size>XBAND_BUF_SIZE ){
+						current_pack_size = XBAND_BUF_SIZE;
+						file_size -= XBAND_BUF_SIZE;
+					} else {
+						current_pack_size = file_size;
+						file_size = 0;
+					}
+
+					if( read(file, xband_buf, current_pack_size)==0xFFFFFFFF ){
+						pdh_device.status = PDH_DEVICE_ERR;
+						pdh_device.target_file_name = xband.filename_to_transmit;
+						pdh_device.errno = errno;
+						xband.delete_transmited_yn = 0;
+						xband.filename_to_delete = 0xFFFF;
+						break;
+					}
+
+					uart_send_data(xband_buf,current_pack_size );
+				}
+
+				if(xband.delete_transmited_yn){
+					if( remove(xband.filename_to_transmit)==0xFF){
+						pdh_device.status = PDH_DEVICE_ERR;
+						pdh_device.target_file_name = xband.filename_to_transmit;
+						pdh_device.errno = errno;
+						xband.filename_to_delete = 0xFFFF;
+					}
+				}
+			}
+			if(xband.filename_to_delete!=0xFFFF){
+				if( remove(xband.filename_to_delete)==0xFF){
+					pdh_device.status = PDH_DEVICE_ERR;
+					pdh_device.target_file_name = xband.filename_to_delete;
+					pdh_device.errno = errno;
+				}
+			}
+		}
+		xQueueSendToBack(device_status_queue, &pdh_device, 0);
+	}
+}
+
 void vTaskCamera(void *pvParameters){
 	uint16_t file, current_pack_size;
 	uint32_t img_size;
@@ -153,6 +236,112 @@ void vTaskInterpreter(void *pvParameters){
 
 
 	while(1){
+		//-----XBAND-BEGIN-----
+				pdh.xband.reinit_filesys = 0;
+				nr_sent = 0;
+				nr_rec = 0;
+				do {
+					printf_eig("Type 'reinit' to reinitialize the filesystem, 'n' not to\n");
+					if( gets_eig(s)!= NULL){
+						if( !strcmp((char *)s,"reinit") ){
+							pdh.xband.reinit_filesys = 1;
+							break;
+						} else if( !strcmp((char *)s,"n") ){
+							break;
+						} else {
+							printf_eig("Invalid command!\n");
+						}
+					}
+				} while(1);
+
+				if(pdh.xband.reinit_filesys==1){
+					xQueueSendToBack(xband_queue, &pdh.xband, 0);
+					nr_sent++;
+				} else {
+
+					do {
+						printf_eig("Press 'y' to select file for transmission, 'n' to skip\n");
+						if( gets_eig(s)!= NULL){
+							if( !strcmp((char *)s,"y") ){
+								collect_params = 1;
+								break;
+							} else if( !strcmp((char *)s,"n") ){
+								pdh.xband.filename_to_transmit = 0xFFFF;
+								collect_params = 0;
+								break;
+							} else {
+								printf_eig("Invalid command!\n");
+							}
+						}
+					} while(1);
+
+					if( collect_params ){
+						collect_params = 0;
+						do {
+							printf_eig("Enter file name [0-1023] of file to be transmitted via x-band.\n");
+							if( gets_eig(s)!= NULL){
+								u16_param = parse_file_name(s);
+								if( u16_param==0xFFFF ){
+									printf_eig("File name must be a number between 0 and 1023 (included)\n");
+								} else {
+									pdh.xband.filename_to_transmit = u16_param;
+									break;
+								}
+							}
+						} while(1);
+
+						do {
+							printf_eig("Press 'y' to delete file after transmission, 'n' to keep it\n");
+							if( gets_eig(s)!= NULL){
+								if( !strcmp((char *)s,"y") ){
+									pdh.xband.delete_transmited_yn = 1;
+									break;
+								} else if( !strcmp((char *)s,"n") ){
+									pdh.xband.delete_transmited_yn = 0;
+									break;
+								} else {
+									printf_eig("Invalid command!\n");
+								}
+							}
+						} while(1);
+					}
+
+					do {
+						printf_eig("Any [other] file you would like to delete?['y'/'n']\n");
+						if( gets_eig(s)!= NULL){
+							if( !strcmp((char *)s,"y") ){
+								collect_params = 1;
+								break;
+							} else if( !strcmp((char *)s,"n") ){
+								pdh.xband.filename_to_delete = 0xFFFF;
+								collect_params =0;
+								break;
+							} else {
+								printf_eig("Invalid command!\n");
+							}
+						}
+					} while(1);
+
+					if(collect_params){
+						collect_params = 0;
+						do {
+							printf_eig("Enter file name [0-1023] of file to delete.\n");
+							if( gets_eig(s)!= NULL){
+								u16_param = parse_file_name(s);
+								if( u16_param==0xFFFF ){
+									printf_eig("File name must be a number between 0 and 1023 (included)\n");
+								} else {
+									pdh.xband.filename_to_delete = u16_param;
+									break;
+								}
+							}
+						} while(1);
+					}
+					xQueueSendToBack(xband_queue, &pdh.xband, 0);
+					nr_sent++;
+
+				}
+				//-----XBAND-END-----
 		//-----CAMERA-BEGIN-----
 		do {
 			printf_eig("Press 'y' to set camera params, 'd' to use default/previous, 'n' to skip\r\n");
@@ -254,7 +443,7 @@ void vTaskInterpreter(void *pvParameters){
 			printf_eig("Press 's' to start PDH operations\r\n");
 			if( gets_eig(s)!= NULL){
 				if( !strcmp((char *)s,"s") ){
-					//pdh.xband.reinit_filesys = 1;
+					pdh.xband.reinit_filesys = 1;
 					break;
 				} else {
 					printf_eig("Invalid command!\r\n");
@@ -266,18 +455,24 @@ void vTaskInterpreter(void *pvParameters){
 
 		do{
 			xQueueReceive(device_status_queue, &pdh_dev_status, portMAX_DELAY);
+			/*
 			if (pdh_dev_status.device==dev_camera){
 				printf_eig("Device camera status ");
 			}
-			/*
+			*/
+
 			if(pdh_dev_status.device==dev_xband){
 				printf_eig("Device xband status ");
 			} else if (pdh_dev_status.device==dev_camera){
 				printf_eig("Device camera status ");
-			} else {
+			}
+			/*
+			else {
 				printf_eig("Device sensor board status ");
 			}
 			*/
+
+
 
 			if( pdh_dev_status.status==PDH_DEVICE_OK ){
 				printf_eig("ok\n");
@@ -285,10 +480,11 @@ void vTaskInterpreter(void *pvParameters){
 				printf_eig("err\n");
 			}
 
+
 			nr_rec++;
 		} while(nr_rec!=nr_sent);
 
-		vTaskPrioritySet(NULL, 5); //raise priority
+		vTaskPrioritySet(NULL, 4); //raise priority
 	}
 }
 /* USER CODE END 0 */
@@ -340,21 +536,23 @@ int main(void)
   ACAM_DMA_Enable();
   ACAM_TestComms();
 
+  xband_queue = xQueueCreate(1, sizeof(struct xband_params) );
   camera_queue = xQueueCreate(1, sizeof(struct camera_params) );
   device_status_queue = xQueueCreate(3, sizeof(struct pdh_device_status) );
 
-  xTaskCreate( vTaskInterpreter, "Interpreter Task", configMINIMAL_STACK_SIZE*2, NULL, 5, &InterpTask_handle);
+  xTaskCreate( vTaskInterpreter, "Interpreter Task", configMINIMAL_STACK_SIZE*2, NULL, 4, &InterpTask_handle);
   xTaskCreate( vTaskCamera, "Camera Task", configMINIMAL_STACK_SIZE*2, NULL, 2, NULL);
+  xTaskCreate( vTaskXBand, "XBand & MemMang Task", configMINIMAL_STACK_SIZE*2, NULL, 3, NULL);
 
   vTaskStartScheduler();
 
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
-  MX_FREERTOS_Init();
+  //MX_FREERTOS_Init();
 
   /* Start scheduler */
-  osKernelStart();
+  //osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
