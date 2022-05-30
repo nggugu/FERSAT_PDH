@@ -1,9 +1,18 @@
 # FERSAT PDH
+## 22. commit
+Započeto pisanje završnog rada, iako završni rad još uvijek ne radi kako treba. Naime, izgleda da kamera
+uredno slika sliku i onda se ta slika uredno spremi na flash memoriju. Po svemu sudeći flash memorija
+uredno funkcionira. Sliku je moguće izbrisati, ali još je nemoguće pročitati sliku, tj. poslati ju preko
+UART-a na računalo. Tijekom debugiranja je vidljivo da se greška javlja isključivo kod pokušaja čitanja
+sa memorije. Također je primijećeno da program zaista vidi da se nešto nalazi na memoriji, ali ne može to
+iz nekog razloga pročitati. Greška se uvijek javlja u funkciji `read` na liniji 119 u `main.c`. Konkretno,
+do greške dolazi na liniji 692 u `filesys.c`, što nam govori da upisan broj okteta nije višekratnik od 510
+(nisam još shvatil kaj to znači). Da, uglavnom, ne znam kaj sad i neizmjerno me frustrira činjenica da me
+taj naizgled potpuno bezvezni i glupi problem sprječava da privedem rad kraju. Želim vikati.
 ## 21. commit
 FreeRTOS sada radi kako treba. Za sada samo postoji greška kod X-Banda (čitaj: slanja slike preko UART-a).
 Pokušavam sada to otkloniti. Inače, FreeRTOS nije uopće mogao ući u task za X-Band, a razlog je bio premala
 količina heapa.
-
 ## 20. commit
 DMA napokon radi. Greška je bila tokom konfiguracije DMA periferije. Za konfiguraciju su se koristile
 funkcije `MX_DMA_Init()` i `MX_SPI2_Init()`. Kod početka programa glavni program je prvo pozvao funkciju
