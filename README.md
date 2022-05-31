@@ -1,4 +1,12 @@
 # FERSAT PDH
+## 24. commit
+Otkrivena je i ispravljena greška koja je sprječavala čitanje slike sa flash memorije. Greška je bila
+na liniji 70 u `w25n.c`, naime zaboravio sam dodati inkrement na pokazivač i to je izazvalo kojekakve
+probleme. Za sada se čini da PDH dobro šalje sliku preko UART-a. Primljene podatke sam spremil u txt file
+i sada tražim način da to pretvorim u sliku, pa da vidim da li sve radi kako treba.
+## 23. commit
+Negdje mi fali opis jednog commita. Najvjerojatnije nije bil neki značajan kad sam ga zaboravil opisati,
+pa sad dodajem ovaj potpuno beznačajan i ni po čemu zanimljiv opis. Nothing to see here, carry on.
 ## 22. commit
 Započeto pisanje završnog rada, iako završni rad još uvijek ne radi kako treba. Naime, izgleda da kamera
 uredno slika sliku i onda se ta slika uredno spremi na flash memoriju. Po svemu sudeći flash memorija

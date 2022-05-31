@@ -689,7 +689,7 @@ uint8_t read_data_from_file(uint16_t file_id, uint32_t nr_bytes, uint8_t * data)
 			//read subpage size indicator bytes
 			while( W25N_read_data(current_subpage*BYTES_PER_SUBPAGE, (uint8_t *)(&bytes_per_subpage), 2) == W25N_ERR_BUSY );
 			//read data
-			if( bytes_per_subpage-subpage_read_offset>510 ){
+			if( (bytes_per_subpage)-subpage_read_offset>510 ){
 				//sanity check fail
 				errno = SUBPAGE_SIZE_ERR;
 				return FS_FAIL;
