@@ -51,7 +51,7 @@
 uint8_t xband_buf[XBAND_BUF_SIZE];
 uint8_t sbc_buf[SBC_BUF_SIZE]; //sensor_board/camera buffer
 
-QueueHandle_t xband_queue, camera_queue, device_status_queue;
+QueueHandle_t xband_queue, camera_queue, device_status_queue, sensor_board_queue;
 TaskHandle_t InterpTask_handle;
 /* USER CODE END PV */
 
@@ -210,6 +210,24 @@ void vTaskCamera(void *pvParameters){
 	}
 }
 
+void vTaskSensor(void *pvParameters) {
+	struct sensor_params params;
+	struct pdh_device_status pdh_device;
+	pdh_device.device = dev_sensor_board;
+
+	while(1) {
+		pdh_device.status = PDH_DEVICE_OK;
+		pdh_device.errno = 0xFFFFFFFF;
+		pdh_device.target_file_name = 0xFFFF;
+
+		xQueueReceive(sensor_board_queue, &params, portMAX_DELAY);
+
+		printf_eig("Hello from sensor task\n");
+
+		xQueueSendToBack(device_status_queue, &pdh_device, 0);
+	}
+}
+
 void vTaskInterpreter(void *pvParameters){
 	struct pdh_params pdh;
 	struct pdh_device_status pdh_dev_status;
@@ -225,14 +243,15 @@ void vTaskInterpreter(void *pvParameters){
 
 	if(W25N_init()==0){
 		printf_eig("w25n SPI fault\r");
-		while(1);
+		// <---------- MAKNUTI KOMENTARE
+		// while(1);
 	} else {
 		printf_eig("startup_ok\r\n");
 	}
-
-	if( start_fs()==FS_FAIL ){
-		printf_eig("filesystem init failure.\r\n");
-	}
+	// <---------- MAKNUTI KOMENTARE
+//	if( start_fs()==FS_FAIL ){
+//		printf_eig("filesystem init failure.\r\n");
+//	}
 
 
 	while(1){
@@ -439,6 +458,12 @@ void vTaskInterpreter(void *pvParameters){
 		}
 		//-----CAMERA-END-----
 
+		//-----SENSOR-BOARD-START-----
+		pdh.sensor_board.file_name = 0;
+		xQueueSendToBack(sensor_board_queue, &pdh.sensor_board, 0);
+		nr_sent++;
+		//-----SENSOR-BOARD-END-------
+
 		do {
 			printf_eig("Press 's' to start PDH operations\r\n");
 			if( gets_eig(s)!= NULL){
@@ -466,11 +491,9 @@ void vTaskInterpreter(void *pvParameters){
 			} else if (pdh_dev_status.device==dev_camera){
 				printf_eig("Device camera status ");
 			}
-			/*
 			else {
 				printf_eig("Device sensor board status ");
 			}
-			*/
 
 
 
@@ -534,16 +557,19 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
-  ACAM_DMA_Enable();
-  ACAM_TestComms();
+  // <---------- MAKNUTI KOMENTARE
+//  ACAM_DMA_Enable();
+//  ACAM_TestComms();
 
   xband_queue = xQueueCreate(1, sizeof(struct xband_params) );
   camera_queue = xQueueCreate(1, sizeof(struct camera_params) );
+  sensor_board_queue = xQueueCreate(1, sizeof(struct sensor_params) );
   device_status_queue = xQueueCreate(3, sizeof(struct pdh_device_status) );
 
   xTaskCreate( vTaskInterpreter, "Interpreter Task", configMINIMAL_STACK_SIZE*2, NULL, 4, &InterpTask_handle);
   xTaskCreate( vTaskCamera, "Camera Task", configMINIMAL_STACK_SIZE*2, NULL, 2, NULL);
   xTaskCreate( vTaskXBand, "XBand & MemMang Task", configMINIMAL_STACK_SIZE*2, NULL, 3, NULL);
+  xTaskCreate( vTaskSensor, "Sensor Board Task", configMINIMAL_STACK_SIZE*2, NULL, 1, NULL);
 
   vTaskStartScheduler();
 

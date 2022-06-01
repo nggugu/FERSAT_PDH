@@ -64,6 +64,7 @@ extern "C" {
 #include "dma.h"
 #include "string.h"
 #include "xband.h"
+// #include "sensor_board.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -144,9 +145,14 @@ struct xband_params{
 	uint16_t filename_to_delete;
 } __PACKED;
 
+struct sensor_params {
+	uint16_t file_name;
+};
+
 struct pdh_params{
 	struct xband_params xband;
 	struct camera_params camera;
+	struct sensor_params sensor_board;
 } __PACKED;
 
 struct pdh_device_status{
