@@ -89,6 +89,9 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define ADC_DRDY_Pin LL_GPIO_PIN_4
+#define ADC_DRDY_GPIO_Port GPIOC
+#define ADC_DRDY_EXTI_IRQn EXTI4_IRQn
 #define LED_R_Pin LL_GPIO_PIN_8
 #define LED_R_GPIO_Port GPIOD
 #define LED_G_Pin LL_GPIO_PIN_9
