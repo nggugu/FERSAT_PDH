@@ -79,7 +79,7 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+#define _SECTION_RAM2 __attribute__((section(".ram2")));
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

@@ -53,6 +53,11 @@ MEMORY
 /* Sections */
 SECTIONS
 {
+  .ram2 :
+  {
+  	KEEP(*(.ram2))
+  } >RAM2
+  
   /* The startup code into "RAM" Ram type memory */
   .isr_vector :
   {

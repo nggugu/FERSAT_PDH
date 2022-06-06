@@ -18,12 +18,12 @@ volatile uint8_t drdy_it_initialized;
 uint8_t dummy_bytes[BYTES_PER_SAMPLE];
 
 ADS131M08 *ads131m08;
+uint8_t samples_array[NUM_SAMPLES * BYTES_PER_SAMPLE] _SECTION_RAM2;
 
 // Function used to perform ADC initialization, prepares the required memory
 // structures and allocates memory for samples, sets SPI mode etc. This
 // function can also be used to perform initial ADC configuration if necessary.
 void ADC_Init(ADS131M08 *adc_struct, SPI_TypeDef *SPIx, DMA_TypeDef *DMAx) {
-	static uint8_t samples_array[NUM_SAMPLES * BYTES_PER_SAMPLE];
 
 	adc_struct->SPIx = SPIx;
 	adc_struct->DMAx = DMAx;

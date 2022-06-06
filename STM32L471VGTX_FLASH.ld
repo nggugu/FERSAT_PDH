@@ -53,6 +53,11 @@ MEMORY
 /* Sections */
 SECTIONS
 {
+  .ram2 :
+  {
+  	KEEP(*(.ram2))
+  } >RAM2
+  
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :
   {

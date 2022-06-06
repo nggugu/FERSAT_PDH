@@ -5,7 +5,7 @@
 #include "gpio.h"
 #include "dma.h"
 
-#define NUM_SAMPLES 512
+#define NUM_SAMPLES 256
 #define BYTES_PER_SAMPLE 30
 
 #define ADC_DRDY_IRQn EXTI4_IRQn

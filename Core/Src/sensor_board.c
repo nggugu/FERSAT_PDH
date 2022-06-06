@@ -7,7 +7,7 @@
 
 #include "sensor_board.h"
 
-float aligned_samples[NUM_SAMPLES * 8 * 2];
+float aligned_samples[NUM_SAMPLES * 8 * 2] _SECTION_RAM2;
 float *temperature;
 
 // Initializes the required memory structures for sensor board operations.
@@ -46,8 +46,8 @@ void SB_Align_Samples(Sensor_Board *sb) {
 
 			int16_t adc_value = ((int16_t) first_byte << 8) | ((int16_t) second_byte);
 
-			aligned_samples[aligned_index] = ((float) adc_value / SB_ADC_MAX_VALUE_16) * SB_ADC_VREF;
-			aligned_index += 2;
+			aligned_samples[aligned_index++] = ((float) adc_value / SB_ADC_MAX_VALUE_16) * SB_ADC_VREF;
+			aligned_samples[aligned_index++] = 0;
 		}
 	}
 }

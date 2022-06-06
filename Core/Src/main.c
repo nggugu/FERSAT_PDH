@@ -228,8 +228,8 @@ void vTaskSensor(void *pvParameters) {
 		Sensor_Board sb;
 		SB_Init(&sb);
 		SB_Get_Temperature_Readings(&sb);
-		// SB_Start_ADC_Sampling(&sb);
-		// SB_Align_Samples(&sb);
+		SB_Start_ADC_Sampling(&sb);
+		SB_Align_Samples(&sb);
 
 		xQueueSendToBack(device_status_queue, &pdh_device, 0);
 	}
