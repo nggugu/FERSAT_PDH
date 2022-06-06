@@ -29,6 +29,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "filesys_api.h"
+#include "sensor_board.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

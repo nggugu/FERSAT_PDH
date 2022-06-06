@@ -194,7 +194,7 @@ void EXTI4_IRQHandler(void)
   {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_4);
     /* USER CODE BEGIN LL_EXTI_LINE_4 */
-
+    ADC_DRDY_interrupt_handler();
     /* USER CODE END LL_EXTI_LINE_4 */
   }
   /* USER CODE BEGIN EXTI4_IRQn 1 */
@@ -329,7 +329,7 @@ void USART2_IRQHandler(void)
 void DMA2_Channel1_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Channel1_IRQn 0 */
-
+  DMA_Transfer_Complete_RX_interrupt_handler();
   /* USER CODE END DMA2_Channel1_IRQn 0 */
 
   /* USER CODE BEGIN DMA2_Channel1_IRQn 1 */
@@ -343,7 +343,7 @@ void DMA2_Channel1_IRQHandler(void)
 void DMA2_Channel2_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Channel2_IRQn 0 */
-
+  DMA_Transfer_Complete_TX_interrupt_handler();
   /* USER CODE END DMA2_Channel2_IRQn 0 */
 
   /* USER CODE BEGIN DMA2_Channel2_IRQn 1 */
