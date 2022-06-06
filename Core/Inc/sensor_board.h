@@ -24,7 +24,7 @@ typedef struct {
 
 void SB_Init(Sensor_Board *sb);
 void SB_Start_ADC_Sampling(Sensor_Board *sb);
-void SB_Align_Samples(Sensor_Board *sb);
+void SB_Get_Complex_Samples(Sensor_Board *sb);
 void SB_Get_Temperature_Readings(Sensor_Board *sb);
 
 #endif /* INC_SENSOR_BOARD_H_ */

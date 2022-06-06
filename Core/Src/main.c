@@ -212,6 +212,7 @@ void vTaskCamera(void *pvParameters){
 }
 
 void vTaskSensor(void *pvParameters) {
+	uint16_t file;
 	struct sensor_params params;
 	struct pdh_device_status pdh_device;
 	pdh_device.device = dev_sensor_board;
@@ -223,13 +224,25 @@ void vTaskSensor(void *pvParameters) {
 
 		xQueueReceive(sensor_board_queue, &params, portMAX_DELAY);
 
-		printf_eig("Hello from sensor task\n");
-
 		Sensor_Board sb;
 		SB_Init(&sb);
 		SB_Get_Temperature_Readings(&sb);
 		SB_Start_ADC_Sampling(&sb);
-		SB_Align_Samples(&sb);
+		SB_Get_Complex_Samples(&sb);
+
+		file = open(params.file_name, O_CREAT|O_WRONLY|O_JWEAK);
+		if(file==0xFFFF){
+			pdh_device.status = PDH_DEVICE_ERR;
+			pdh_device.target_file_name = params.file_name;
+			pdh_device.errno = errno;
+		} else {
+			if( write(file, (void *) sb.adc->complex_samples, NUM_SAMPLES * 8 * 2 * 4)==0xFFFFFFFF ){
+				pdh_device.status = PDH_DEVICE_ERR;
+				pdh_device.target_file_name = params.file_name;
+				pdh_device.errno = errno;
+			}
+			pdh_device.target_file_name = params.file_name;
+		}
 
 		xQueueSendToBack(device_status_queue, &pdh_device, 0);
 	}
@@ -466,9 +479,43 @@ void vTaskInterpreter(void *pvParameters){
 		//-----CAMERA-END-----
 
 		//-----SENSOR-BOARD-START-----
-		pdh.sensor_board.file_name = 0;
-		xQueueSendToBack(sensor_board_queue, &pdh.sensor_board, 0);
-		nr_sent++;
+
+		do {
+			printf_eig("Press 'y' to set sensor params, 'n' to skip\r\n");
+			if( gets_eig(s)!= NULL){
+				if( !strcmp((char *)s,"y") ){
+					collect_params = 1;
+					break;
+				} else if( !strcmp((char *)s,"n") ){
+					collect_params = 0;
+					break;
+				} else {
+					printf_eig("Invalid command!\r\n");
+				}
+			}
+		} while(1);
+
+		if( collect_params==1 ){
+			//collect new parameters
+			collect_params = 0;
+
+			do {
+				printf_eig("Enter file name [0-1023] to store sensor data.\r\n");
+				if( gets_eig(s)!= NULL){
+					u16_param = parse_file_name(s);
+					if( u16_param==0xFFFF ){
+						printf_eig("File name must be a number between 0 and 1023 (included)\r\n");
+					} else {
+						pdh.sensor_board.file_name = u16_param;
+						break;
+					}
+				}
+			} while(1);
+
+			xQueueSendToBack(sensor_board_queue, &pdh.sensor_board, 0);
+			nr_sent++;
+		}
+
 		//-----SENSOR-BOARD-END-------
 
 		do {

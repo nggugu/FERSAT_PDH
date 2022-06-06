@@ -23,6 +23,7 @@ typedef struct {
 	uint16_t num_samples;
 	uint8_t *samples;
 	volatile uint8_t sampling_complete_flag;
+	float *complex_samples;
 } ADS131M08;
 
 void ADC_Init(ADS131M08 *adc_struct, SPI_TypeDef *SPIx, DMA_TypeDef *DMAx);

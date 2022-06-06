@@ -7,12 +7,12 @@
 
 #include "sensor_board.h"
 
-float aligned_samples[NUM_SAMPLES * 8 * 2] _SECTION_RAM2;
-float *temperature;
+float complex_samples[NUM_SAMPLES * 8 * 2] _SECTION_RAM2;
 
 // Initializes the required memory structures for sensor board operations.
 void SB_Init(Sensor_Board *sb) {
 	static ADS131M08 adc;
+	adc.complex_samples = complex_samples;
 	sb->adc = &adc;
 	static ADT7301 ts;
 	sb->tmp_sensor = &ts;
@@ -25,10 +25,10 @@ void SB_Start_ADC_Sampling(Sensor_Board *sb) {
 	ADC_Start_Sampling(sb->adc);
 }
 
-// Fetches 24-bit ADC samples from memory buffer and stores them into
-// an array of complex floating-point numbers intended to be used as
+// Fetches 24-bit ADC samples from memory buffer, performs conversion from integer to float,
+// and stores samples into an array of complex floating-point numbers intended to be used as
 // the source buffer for CMSIS FFT implementation.
-void SB_Align_Samples(Sensor_Board *sb) {
+void SB_Get_Complex_Samples(Sensor_Board *sb) {
 	while (!sb->adc->sampling_complete_flag);
 
 	uint32_t aligned_index = 0;
@@ -46,8 +46,8 @@ void SB_Align_Samples(Sensor_Board *sb) {
 
 			int16_t adc_value = ((int16_t) first_byte << 8) | ((int16_t) second_byte);
 
-			aligned_samples[aligned_index++] = ((float) adc_value / SB_ADC_MAX_VALUE_16) * SB_ADC_VREF;
-			aligned_samples[aligned_index++] = 0;
+			complex_samples[aligned_index++] = ((float) adc_value / SB_ADC_MAX_VALUE_16) * SB_ADC_VREF;
+			complex_samples[aligned_index++] = 0;
 		}
 	}
 }
@@ -67,8 +67,6 @@ void SB_Get_Temperature_Readings(Sensor_Board *sb) {
 //	ADT7301_Wakeup(sb->tmp_sensor, TEMP3);
 //	ADT7301_Collect_Sample(sb->tmp_sensor, TEMP3);
 //	ADT7301_Shutdown(sb->tmp_sensor, TEMP3);
-
-	temperature = sb->tmp_sensor->samples;
 }
 
 
