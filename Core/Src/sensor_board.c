@@ -6,6 +6,7 @@
  */
 
 #include "sensor_board.h"
+#include "tim.h"
 
 float complex_samples[NUM_SAMPLES * 8 * 2] _SECTION_RAM2;
 
@@ -55,6 +56,7 @@ void SB_Get_Complex_Samples(Sensor_Board *sb) {
 // Collects samples from sensor board temperature sensors.
 void SB_Get_Temperature_Readings(Sensor_Board *sb) {
 	ADT7301_Init(sb->tmp_sensor, SB_SPIx);
+	wait_for(5, TIM_UNIT_MS); // not sure if necessary, but just in case
 
 	ADT7301_Wakeup(sb->tmp_sensor, TEMP1);
 	ADT7301_Collect_Sample(sb->tmp_sensor, TEMP1);

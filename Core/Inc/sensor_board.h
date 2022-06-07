@@ -14,7 +14,7 @@
 #define SB_SPIx SPI3
 #define SB_DMAx DMA2
 
-#define SB_ADC_VREF 3.3F
+#define SB_ADC_VREF 1.2F
 #define SB_ADC_MAX_VALUE_16 32768
 
 typedef struct {

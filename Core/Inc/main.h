@@ -90,6 +90,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define TEMP1_CS_Pin LL_GPIO_PIN_3
+#define TEMP1_CS_GPIO_Port GPIOA
 #define ADC_DRDY_Pin LL_GPIO_PIN_4
 #define ADC_DRDY_GPIO_Port GPIOC
 #define ADC_DRDY_EXTI_IRQn EXTI4_IRQn
@@ -97,6 +99,10 @@ void Error_Handler(void);
 #define LED_R_GPIO_Port GPIOD
 #define LED_G_Pin LL_GPIO_PIN_9
 #define LED_G_GPIO_Port GPIOD
+#define TEMP2_CS_Pin LL_GPIO_PIN_10
+#define TEMP2_CS_GPIO_Port GPIOA
+#define TEMP3_CS_Pin LL_GPIO_PIN_11
+#define TEMP3_CS_GPIO_Port GPIOA
 #ifndef NVIC_PRIORITYGROUP_0
 #define NVIC_PRIORITYGROUP_0         ((uint32_t)0x00000007) /*!< 0 bit  for pre-emption priority,
                                                                  4 bits for subpriority */
