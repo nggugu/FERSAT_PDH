@@ -1054,7 +1054,7 @@ const struct ACAM_I2C_Register OV5642_QVGA_Preview[]  =
 const struct ACAM_I2C_Register OV5642_JPEG_Capture_QSXGA[]  =
 {
 	// OV5642_ QSXGA _YUV7.5 fps
-	// 24 MHz input clock, 24Mhz pclk
+	// 20 MHz input clock, 20Mhz pclk
 	// jpeg mode 7.5fps
 
 	{0x35, 0x03 ,0x07},	//AEC Manual Mode Control

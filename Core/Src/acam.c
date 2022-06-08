@@ -166,9 +166,8 @@ void ACAM_set_gain(uint8_t gain){
 uint8_t ACAM_SPI_Read(uint8_t reg){
 	uint8_t retval;
 
-	//ACAM_CS_LOW();
-	LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_12);
-	wait_for(500,TIM_UNIT_MS);
+	ACAM_CS_LOW();
+	wait_for(1,TIM_UNIT_MS);
 
 	LL_SPI_TransmitData8( SPI2, reg);			//instruction transmit
 	while( !LL_SPI_IsActiveFlag_RXNE(SPI2) );
@@ -183,8 +182,7 @@ uint8_t ACAM_SPI_Read(uint8_t reg){
 	while( LL_SPI_IsActiveFlag_BSY(SPI2) );
 
 	wait_for(1,TIM_UNIT_US);
-	//ACAM_CS_HIGH();
-	LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);
+	ACAM_CS_HIGH();
 	wait_for(10,TIM_UNIT_US);
 
 	return retval;
@@ -218,8 +216,7 @@ void ACAM_spi_read_package(uint8_t * buff, uint16_t size){
 	uint8_t dummy;
 	uint8_t i;
 
-	LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_12);
-	//ACAM_CS_LOW();
+	ACAM_CS_LOW();
 	wait_for(1,TIM_UNIT_US);
 
 	for( i=0; i<2; i++){
@@ -245,8 +242,7 @@ void ACAM_spi_read_package(uint8_t * buff, uint16_t size){
 	}
 
 	wait_for(1,TIM_UNIT_US);
-	//ACAM_CS_HIGH();
-	LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);
+	ACAM_CS_HIGH();
 	wait_for(10,TIM_UNIT_US);
 
 	return;
@@ -262,12 +258,11 @@ void ACAM_I2C_Setup() {
 	// Check transfer type and set CR2 bit accordingly
 	if ((I2C_Trans.type == ACAM_I2C_WRITE) || (I2C_Trans.type == ACAM_I2C_WRITE_REG)) {
 		CLEAR_BIT(I2C1->CR2, I2C_CR2_RD_WRN);
+		LL_I2C_SetSlaveAddr(I2C1, ACAM_I2C_ADDR);
 	} else if (I2C_Trans.type == ACAM_I2C_READ) {
 		SET_BIT(I2C1->CR2, I2C_CR2_RD_WRN);
+		LL_I2C_SetSlaveAddr(I2C1, ACAM_I2C_ADDR | 0x01);
 	}
-
-	// Set slave address
-	LL_I2C_SetSlaveAddr(I2C1, ACAM_I2C_ADDR);
 }
 
 /*

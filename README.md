@@ -1,4 +1,6 @@
 # FERSAT PDH
+## 25. commit
+Nešto sam napravio i sada sve radi kako treba.
 ## 24. commit
 Otkrivena je i ispravljena greška koja je sprječavala čitanje slike sa flash memorije. Greška je bila
 na liniji 70 u `w25n.c`, naime zaboravio sam dodati inkrement na pokazivač i to je izazvalo kojekakve
