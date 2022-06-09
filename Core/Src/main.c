@@ -230,18 +230,33 @@ void vTaskSensor(void *pvParameters) {
 		SB_Start_ADC_Sampling(&sb);
 		SB_Get_Complex_Samples(&sb);
 
-		file = open(params.file_name, O_CREAT|O_WRONLY|O_JWEAK);
+		// Attempt to write ADC samples to file
+		file = open(params.adc_samples_file_name, O_CREAT|O_WRONLY|O_JWEAK);
 		if(file==0xFFFF){
 			pdh_device.status = PDH_DEVICE_ERR;
-			pdh_device.target_file_name = params.file_name;
+			pdh_device.target_file_name = params.adc_samples_file_name;
 			pdh_device.errno = errno;
 		} else {
 			if( write(file, (void *) sb.adc->complex_samples, NUM_SAMPLES * 8 * 2 * 4)==0xFFFFFFFF ){
 				pdh_device.status = PDH_DEVICE_ERR;
-				pdh_device.target_file_name = params.file_name;
+				pdh_device.target_file_name = params.adc_samples_file_name;
 				pdh_device.errno = errno;
+			} else {
+				// Attempt to write temperature samples to file
+				file = open(params.temp_samples_file_name, O_CREAT|O_WRONLY|O_JWEAK);
+				if(file==0xFFFF){
+					pdh_device.status = PDH_DEVICE_ERR;
+					pdh_device.target_file_name = params.temp_samples_file_name;
+					pdh_device.errno = errno;
+				} else {
+					if( write(file, (void *) sb.tmp_sensor->samples, 12)==0xFFFFFFFF ){
+						pdh_device.status = PDH_DEVICE_ERR;
+						pdh_device.target_file_name = params.temp_samples_file_name;
+						pdh_device.errno = errno;
+					}
+				}
 			}
-			pdh_device.target_file_name = params.file_name;
+			pdh_device.target_file_name = params.adc_samples_file_name;
 		}
 
 		xQueueSendToBack(device_status_queue, &pdh_device, 0);
@@ -263,15 +278,13 @@ void vTaskInterpreter(void *pvParameters){
 
 	if(W25N_init()==0){
 		printf_eig("w25n SPI fault\r");
-		// <---------- MAKNUTI KOMENTARE
-		// while(1);
+		while(1);
 	} else {
 		printf_eig("startup_ok\r\n");
 	}
-	// <---------- MAKNUTI KOMENTARE
-//	if( start_fs()==FS_FAIL ){
-//		printf_eig("filesystem init failure.\r\n");
-//	}
+	if( start_fs()==FS_FAIL ){
+		printf_eig("filesystem init failure.\r\n");
+	}
 
 
 	while(1){
@@ -506,7 +519,22 @@ void vTaskInterpreter(void *pvParameters){
 					if( u16_param==0xFFFF ){
 						printf_eig("File name must be a number between 0 and 1023 (included)\r\n");
 					} else {
-						pdh.sensor_board.file_name = u16_param;
+						pdh.sensor_board.adc_samples_file_name = u16_param;
+						break;
+					}
+				}
+			} while(1);
+
+			do {
+				printf_eig("Enter file name [0-1023] to store temperature data.\r\n");
+				if( gets_eig(s)!= NULL){
+					u16_param = parse_file_name(s);
+					if( u16_param==0xFFFF ){
+						printf_eig("File name must be a number between 0 and 1023 (included)\r\n");
+					} else if (u16_param == pdh.sensor_board.adc_samples_file_name) {
+						printf_eig("File name must be different from sensor data file name.\r\n");
+					} else {
+						pdh.sensor_board.temp_samples_file_name = u16_param;
 						break;
 					}
 				}

@@ -152,7 +152,8 @@ struct xband_params{
 } __PACKED;
 
 struct sensor_params {
-	uint16_t file_name;
+	uint16_t adc_samples_file_name;
+	uint16_t temp_samples_file_name;
 };
 
 struct pdh_params{
