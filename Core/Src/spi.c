@@ -334,6 +334,10 @@ void SPI_Start_Transfer(SPI_TypeDef *SPIx) {
 	LL_SPI_Enable(SPIx);
 }
 
+void SPI_Set_Prescaler_32(SPI_TypeDef *SPIx) {
+	LL_SPI_SetBaudRatePrescaler(SPIx, LL_SPI_BAUDRATEPRESCALER_DIV32);
+}
+
 
 void SPI_TransmitReceive(SPI_TypeDef *SPIx, uint8_t len, uint8_t *tx_buffer, uint8_t *rx_buffer) {
 	LL_SPI_Enable(SPIx);

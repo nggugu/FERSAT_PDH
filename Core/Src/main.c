@@ -227,8 +227,8 @@ void vTaskSensor(void *pvParameters) {
 		Sensor_Board sb;
 		SB_Init(&sb);
 		SB_Get_Temperature_Readings(&sb);
-		SB_Start_ADC_Sampling(&sb);
-		SB_Get_Complex_Samples(&sb);
+		// SB_Start_ADC_Sampling(&sb);
+		// SB_Get_Complex_Samples(&sb);
 
 		// Attempt to write ADC samples to file
 		file = open(params.adc_samples_file_name, O_CREAT|O_WRONLY|O_JWEAK);

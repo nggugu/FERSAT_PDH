@@ -57,6 +57,7 @@ void SPI_Disable_DMA_Requests(SPI_TypeDef *SPIx);
 void SPI_Enable_RXNE_TXE_Interrupts(SPI_TypeDef *SPIx);
 void SPI_Start_Transfer(SPI_TypeDef *SPIx);
 void SPI_Set_Mode(SPI_mode mode, SPI_TypeDef *SPIx);
+void SPI_Set_Prescaler_32(SPI_TypeDef *SPIx);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
