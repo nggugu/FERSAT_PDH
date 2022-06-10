@@ -227,8 +227,15 @@ void vTaskSensor(void *pvParameters) {
 		Sensor_Board sb;
 		SB_Init(&sb);
 		SB_Get_Temperature_Readings(&sb);
-		// SB_Start_ADC_Sampling(&sb);
-		// SB_Get_Complex_Samples(&sb);
+		SB_Start_ADC_Sampling(&sb);
+		SB_Get_Complex_Samples(&sb);
+
+		// Testing output
+		printf_eig("\nSensor testing output: transmitting first sensor sample (ch0):\n");
+		uart_send_data((uint8_t *) sb.adc->complex_samples, 4 * 2);
+		printf_eig("\nSensor testing output: transmitting temperature samples (temp1, temp2):\n");
+		uart_send_data((uint8_t *) sb.tmp_sensor->samples, 4 * 2);
+		printf_eig("\n");
 
 		// Attempt to write ADC samples to file
 		file = open(params.adc_samples_file_name, O_CREAT|O_WRONLY|O_JWEAK);
