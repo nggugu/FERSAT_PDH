@@ -52,6 +52,7 @@ void SB_Get_Complex_Samples(Sensor_Board *sb) {
 			complex_samples[dest_index++] = 0;
 		}
 	}
+}
 
 // Collects samples from sensor board temperature sensors.
 void SB_Get_Temperature_Readings(Sensor_Board *sb) {
