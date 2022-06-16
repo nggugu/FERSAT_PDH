@@ -30,6 +30,7 @@
 /* USER CODE BEGIN Includes */
 #include "filesys_api.h"
 #include "sensor_board.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -130,7 +131,7 @@ void vTaskXBand(void *pvParameters){
 				}
 
 				if(xband.delete_transmited_yn){
-					if( remove(xband.filename_to_transmit)==0xFF){
+					if( remove_(xband.filename_to_transmit)==0xFF){
 						pdh_device.status = PDH_DEVICE_ERR;
 						pdh_device.target_file_name = xband.filename_to_transmit;
 						pdh_device.errno = errno;
@@ -139,7 +140,7 @@ void vTaskXBand(void *pvParameters){
 				}
 			}
 			if(xband.filename_to_delete!=0xFFFF){
-				if( remove(xband.filename_to_delete)==0xFF){
+				if( remove_(xband.filename_to_delete)==0xFF){
 					pdh_device.status = PDH_DEVICE_ERR;
 					pdh_device.target_file_name = xband.filename_to_delete;
 					pdh_device.errno = errno;
@@ -231,10 +232,13 @@ void vTaskSensor(void *pvParameters) {
 		SB_Get_Complex_Samples(&sb);
 
 		// Testing output
+		char str[100];
 		printf_eig("\nSensor testing output: transmitting first sensor sample (ch0):\n");
-		uart_send_data((uint8_t *) sb.adc->complex_samples, 4 * 2);
-		printf_eig("\nSensor testing output: transmitting temperature samples (temp1, temp2):\n");
-		uart_send_data((uint8_t *) sb.tmp_sensor->samples, 4 * 2);
+		sprintf(str, "%.3f + j%.3f [Volts]\n", sb.adc->complex_samples[0], sb.adc->complex_samples[1]);
+		printf_eig((const char *) str);
+		printf_eig("Sensor testing output: transmitting temperature samples (temp1, temp2):\n");
+		sprintf(str, "%.3f, %.3f [degrees Celsius]\n", sb.tmp_sensor->samples[0], sb.tmp_sensor->samples[1]);
+		printf_eig((const char *) str);
 		printf_eig("\n");
 
 		// Attempt to write ADC samples to file

@@ -5,6 +5,7 @@ void ADT7301_Init(ADT7301 *adt7301_struct, SPI_TypeDef *SPIx) {
 	adt7301_struct->SPIx = SPIx;
 	SPI_Set_Mode(CPOL1_CPHA1, SPIx);
 	SPI_Set_Prescaler_32(SPIx);
+	LL_SPI_Enable(SPIx);
 }
 
 // Collects a sample from one temperature sensor, specified by parameter ts.

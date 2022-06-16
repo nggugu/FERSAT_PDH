@@ -6,7 +6,6 @@
  */
 
 #include "sensor_board.h"
-#include "tim.h"
 
 float complex_samples[NUM_SAMPLES * 8 * 2] _SECTION_RAM2;
 
@@ -31,32 +30,32 @@ void SB_Start_ADC_Sampling(Sensor_Board *sb) {
 // the source buffer for CMSIS FFT implementation.
 void SB_Get_Complex_Samples(Sensor_Board *sb) {
 	while (!sb->adc->sampling_complete_flag);
+	uint32_t dest_index = 0;
 
-	uint32_t aligned_index = 0;
-	for (uint16_t i = 0; i < NUM_SAMPLES; i++) {
-		uint32_t base_index = i * BYTES_PER_SAMPLE;
+	// One ADC frame is made of 10 24-bit words (one for each channel).
+	// The first and last word should be ignored, and others truncated
+	// to 16 bits.
 
-		// One ADC frame is made of 10 24-bit words (one for each channel).
-		// The first and last word should be ignored, and others truncated
-		// to 16 bits.
+	for (uint8_t ch = 0; ch < 8; ch++) {
+		uint16_t ch_offset = 3 + ch * 3; // ignore first 3 bytes (command response)
 
-		for(uint8_t j = 3; j < 27; j += 3) {
-			uint8_t first_byte = sb->adc->samples[base_index + j];
-			uint8_t second_byte = sb->adc->samples[base_index + j + 1];
+		for (uint16_t sample = 0; sample < NUM_SAMPLES; sample++) {
+			uint16_t sample_offset = sample * BYTES_PER_SAMPLE;
+
+			uint8_t first_byte = sb->adc->samples[ch_offset + sample_offset];
+			uint8_t second_byte = sb->adc->samples[ch_offset + sample_offset + 1];
 			// third byte is ignored, we only want 16 bits
 
 			int16_t adc_value = ((int16_t) first_byte << 8) | ((int16_t) second_byte);
 
-			complex_samples[aligned_index++] = ((float) adc_value / SB_ADC_MAX_VALUE_16) * SB_ADC_VREF;
-			complex_samples[aligned_index++] = 0;
+			complex_samples[dest_index++] = ((float) adc_value / SB_ADC_MAX_VALUE_16) * SB_ADC_VREF;
+			complex_samples[dest_index++] = 0;
 		}
 	}
-}
 
 // Collects samples from sensor board temperature sensors.
 void SB_Get_Temperature_Readings(Sensor_Board *sb) {
 	ADT7301_Init(sb->tmp_sensor, SB_SPIx);
-	wait_for(5, TIM_UNIT_MS); // not sure if necessary, but just in case
 
 	ADT7301_Wakeup(sb->tmp_sensor, TEMP1);
 	ADT7301_Collect_Sample(sb->tmp_sensor, TEMP1);

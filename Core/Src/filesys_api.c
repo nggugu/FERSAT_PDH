@@ -197,7 +197,7 @@ uint8_t close(uint16_t filedes){
 //         - 0xFF if failed
 //note: when failure occurs, error type is visible in errno
 //
-uint8_t remove(uint16_t file_name){
+uint8_t remove_(uint16_t file_name){
 	if( file_name>1024 ){
 		errno = FILE_DOESNT_EXIST;
 		return 0xFF;

@@ -13,7 +13,7 @@ uint16_t open(uint16_t file_name, uint8_t oflag);
 uint32_t write(uint16_t filedes, void * buf, uint32_t nbyte);
 uint32_t read(uint16_t filedes, void * buf, uint32_t nbyte);
 uint8_t close(uint16_t filedes);
-uint8_t remove(uint16_t file_name);
+uint8_t remove_(uint16_t file_name);
 
 //returns file size in bytes for given file descriptor
 //params:  - filedes a.k.a. file_id
