@@ -17,7 +17,7 @@
 #define ADC_CLK_GPIOx	GPIOC
 #define ADC_CLK_PIN		LL_GPIO_PIN_9
 
-typedef struct {
+typedef struct ADS131M08 {
 	SPI_TypeDef *SPIx;
 	DMA_TypeDef *DMAx;
 	uint16_t num_samples;

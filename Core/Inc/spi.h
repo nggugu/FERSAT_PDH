@@ -29,7 +29,7 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-#include "ads131m08.h"
+#include "stm32l4xx_ll_spi.h"
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */

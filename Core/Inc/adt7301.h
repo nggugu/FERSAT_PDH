@@ -11,7 +11,7 @@
 #define TEMP3_CS_GPIOx	GPIOA
 #define TEMP3_CS_PIN	LL_GPIO_PIN_11
 
-typedef struct {
+typedef struct ADT7301 {
 	SPI_TypeDef *SPIx;
 	float samples[3];
 } ADT7301;
