@@ -329,11 +329,6 @@ void SPI_Enable_RXNE_TXE_Interrupts(SPI_TypeDef *SPIx) {
 	LL_SPI_EnableIT_TXE(SPIx);
 }
 
-void SPI_Start_Transfer(SPI_TypeDef *SPIx) {
-	LL_GPIO_ResetOutputPin(ADC_CS_GPIOx, ADC_CS_PIN);
-	LL_SPI_Enable(SPIx);
-}
-
 void SPI_Set_Prescaler_32(SPI_TypeDef *SPIx) {
 	LL_SPI_SetBaudRatePrescaler(SPIx, LL_SPI_BAUDRATEPRESCALER_DIV32);
 }

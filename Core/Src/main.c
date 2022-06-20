@@ -227,19 +227,25 @@ void vTaskSensor(void *pvParameters) {
 
 		Sensor_Board sb;
 		SB_Init(&sb);
+		taskENTER_CRITICAL();
 		SB_Get_Temperature_Readings(&sb);
+		taskEXIT_CRITICAL();
 		SB_Start_ADC_Sampling(&sb);
 		SB_Get_Complex_Samples(&sb);
 
 		// Testing output
 		char str[100];
-		printf_eig("\nSensor testing output: transmitting first sensor sample (ch0):\n");
-		sprintf(str, "%.3f + j%.3f [Volts]\n", sb.adc->complex_samples[0], sb.adc->complex_samples[1]);
-		printf_eig((const char *) str);
 		printf_eig("Sensor testing output: transmitting temperature samples (temp1, temp2):\n");
 		sprintf(str, "%.3f, %.3f [degrees Celsius]\n", sb.tmp_sensor->samples[0], sb.tmp_sensor->samples[1]);
 		printf_eig((const char *) str);
 		printf_eig("\n");
+
+		printf_eig("\nSensor testing output: transmitting first 10 sensor samples (ch0):\n");
+		for(int i = 0; i < 20; i += 2) {
+			sprintf(str, "%.3f + j%.3f [Volts]\n", sb.adc->complex_samples[i], sb.adc->complex_samples[i+1]);
+			printf_eig((const char *) str);
+		}
+
 
 		// Attempt to write ADC samples to file
 		file = open(params.adc_samples_file_name, O_CREAT|O_WRONLY|O_JWEAK);

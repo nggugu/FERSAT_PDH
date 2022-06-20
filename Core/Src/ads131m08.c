@@ -18,7 +18,7 @@ volatile uint8_t drdy_it_initialized;
 uint8_t dummy_bytes[BYTES_PER_SAMPLE];
 
 ADS131M08 *ads131m08;
-uint8_t samples_array[NUM_SAMPLES * BYTES_PER_SAMPLE] _SECTION_RAM2;
+volatile uint8_t samples_array[NUM_SAMPLES * BYTES_PER_SAMPLE] _SECTION_RAM2;
 
 // Function used to perform ADC initialization, prepares the required memory
 // structures and allocates memory for samples, sets SPI mode etc. This
@@ -74,7 +74,8 @@ void ADC_DRDY_interrupt_handler() {
 
 		NVIC_DisableIRQ(ADC_DRDY_IRQn); // Interrupt is re-enabled in DMA transfer complete routine
 
-		SPI_Start_Transfer(ads131m08->SPIx);
+		LL_GPIO_ResetOutputPin(ADC_CS_GPIOx, ADC_CS_PIN);
+		LL_SPI_Enable(ads131m08->SPIx);
 	} else if (current_sample_count >= NUM_SAMPLES) {
 		NVIC_DisableIRQ(ADC_DRDY_IRQn);
 		ads131m08->sampling_complete_flag = 1;

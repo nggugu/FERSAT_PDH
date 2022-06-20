@@ -159,7 +159,7 @@ void ACAM_DMA_config_rx(uint16_t nr_bytes, uint8_t * rx_address){
 }
 
 // ----- dodano za sensor board --------------------
-void DMA_Channel_Init(DMA_TypeDef *DMAx, uint32_t channel, uint32_t periph_addr, uint8_t *mem_addr) {
+void DMA_Channel_Init(DMA_TypeDef *DMAx, uint32_t channel, uint32_t periph_addr, volatile uint8_t *mem_addr) {
 	LL_DMA_SetPeriphAddress(DMAx, channel, periph_addr);
 	LL_DMA_SetMemoryAddress(DMAx, channel, (uint32_t) mem_addr);
 	LL_DMA_EnableIT_TC(DMAx, channel);
@@ -169,7 +169,7 @@ void DMA_Set_Channel_Data_Length(DMA_TypeDef *DMAx, uint32_t channel, uint32_t l
 	LL_DMA_SetDataLength(DMAx, channel, length);
 }
 
-void DMA_Reload_Memory_Address(DMA_TypeDef *DMAx, uint32_t channel, uint8_t *mem_addr) {
+void DMA_Reload_Memory_Address(DMA_TypeDef *DMAx, uint32_t channel, volatile uint8_t *mem_addr) {
 	LL_DMA_SetMemoryAddress(DMAx, channel, (uint32_t) mem_addr);
 }
 
