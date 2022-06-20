@@ -24,7 +24,7 @@
 #include "task.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "ads131m08.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

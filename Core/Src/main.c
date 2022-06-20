@@ -31,6 +31,7 @@
 #include "filesys_api.h"
 #include "sensor_board.h"
 #include <stdio.h>
+#include "arm_math.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -218,6 +219,10 @@ void vTaskSensor(void *pvParameters) {
 	struct pdh_device_status pdh_device;
 	pdh_device.device = dev_sensor_board;
 
+	arm_status status;
+	arm_rfft_fast_instance_f32 S;
+	static float32_t fft_out[NUM_SAMPLES];
+
 	while(1) {
 		pdh_device.status = PDH_DEVICE_OK;
 		pdh_device.errno = 0xFFFFFFFF;
@@ -245,7 +250,6 @@ void vTaskSensor(void *pvParameters) {
 			sprintf(str, "%.3f + j%.3f [Volts]\n", sb.adc->complex_samples[i], sb.adc->complex_samples[i+1]);
 			printf_eig((const char *) str);
 		}
-
 
 		// Attempt to write ADC samples to file
 		file = open(params.adc_samples_file_name, O_CREAT|O_WRONLY|O_JWEAK);
@@ -275,6 +279,15 @@ void vTaskSensor(void *pvParameters) {
 			}
 			pdh_device.target_file_name = params.adc_samples_file_name;
 		}
+
+		// FFT of ch0 data
+		status = arm_rfft_fast_init_f32(&S, NUM_SAMPLES);
+		arm_rfft_fast_f32(&S, (float32_t *) sb.adc->complex_samples, fft_out, 0);
+
+		printf_eig("FFT output DC offset: ");
+		sprintf(str, "%.3f\n", fft_out[0]);
+		printf_eig((const char *) str);
+
 
 		xQueueSendToBack(device_status_queue, &pdh_device, 0);
 	}
