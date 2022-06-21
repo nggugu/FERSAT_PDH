@@ -285,7 +285,7 @@ void vTaskSensor(void *pvParameters) {
 		arm_rfft_fast_f32(&S, (float32_t *) sb.adc->complex_samples, fft_out, 0);
 
 		printf_eig("FFT output DC offset: ");
-		sprintf(str, "%.3f\n", fft_out[0]);
+		sprintf(str, "%.3f\n", fft_out[0] + fft_out[1]);
 		printf_eig((const char *) str);
 
 
